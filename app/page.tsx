@@ -1,6 +1,11 @@
 'use client';
 
-import LandingPage from '../components/LandingPage';
+// Make sure the LandingPage component exists at ../components/LandingPage.tsx or .jsx
+// If the file is named differently or located elsewhere, update the import path accordingly.
+// Example if the file is named landing-page.tsx:
+import LandingPage from '../components/landing-page';
+// Or if it's in a different folder:
+// import LandingPage from './LandingPage';
 import VoiceRecorder from '../components/audio/VoiceRecorder';
 import { useState } from 'react';
 

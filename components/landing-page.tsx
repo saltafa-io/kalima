@@ -3,9 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { Mic, Square, Play, Pause, ArrowRight, Check, Star, Users, Award, Clock } from 'lucide-react';
 
-const LandingPage = () => {
+// Define the type for the props that this component will receive.
+// This tells TypeScript that LandingPage expects a function called `onGetStarted`.
+type LandingPageProps = {
+  onGetStarted: () => void;
+};
+
+const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isNavScrolled, setIsNavScrolled] = useState(false);
+  // State to manage the modal dialog
+  const [modalContent, setModalContent] = useState<{title: string, body: string} | null>(null);
 
   useEffect(() => {
     // Loading effect
@@ -33,16 +41,26 @@ const LandingPage = () => {
     }
   };
 
+  // Updated handlers to use the modal instead of alert()
   const handleDemo = () => {
-    alert('Demo recording would start here! In the full app, this would use Web Audio API to record your voice and send it to our AI for analysis.');
+    setModalContent({
+      title: "Demo Feature",
+      body: "In the full app, this would use the Web Audio API to record your voice and send it to our AI for analysis."
+    });
   };
 
   const handlePlayExample = () => {
-    alert('Native speaker audio would play here! The full app includes high-quality Arabic audio from native speakers.');
+    setModalContent({
+      title: "Native Speaker Audio",
+      body: "The full app includes high-quality Arabic audio from native speakers to help you learn."
+    });
   };
 
   const handleJoinBeta = () => {
-    alert('Beta signup form would appear here! We\'d collect your email and send you early access when available.');
+    setModalContent({
+      title: "Join the Beta!",
+      body: "A beta signup form would appear here. We'd collect your email and send you early access when available."
+    });
   };
 
   const features = [
@@ -164,8 +182,9 @@ const LandingPage = () => {
             Learn Arabic with AI-powered voice feedback. Perfect your pronunciation with real-time analysis and personalized coaching.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {/* The onClick handler is now connected to the onGetStarted prop */}
             <button
-              onClick={() => scrollToSection('demo')}
+              onClick={onGetStarted}
               className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all hover:scale-105 hover:shadow-xl flex items-center justify-center"
             >
               Try Free Demo
@@ -330,6 +349,22 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Modal Dialog */}
+      {modalContent && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full transform transition-all animate-slide-up">
+            <h3 className="text-xl font-bold mb-4 text-gray-800">{modalContent.title}</h3>
+            <p className="text-gray-600 mb-6">{modalContent.body}</p>
+            <button
+              onClick={() => setModalContent(null)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-lg w-full transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
