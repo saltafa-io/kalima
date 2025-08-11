@@ -1,38 +1,42 @@
 'use client';
 
-// Make sure the LandingPage component exists at ../components/LandingPage.tsx or .jsx
-// If the file is named differently or located elsewhere, update the import path accordingly.
-// Example if the file is named landing-page.tsx:
+import React, { useState } from 'react';
+// The LandingPage component is imported from the other Canvas artifact.
 import LandingPage from '../components/landing-page';
-// Or if it's in a different folder:
-// import LandingPage from './LandingPage';
+// We'll assume this component is available for now.
 import VoiceRecorder from '../components/audio/VoiceRecorder';
-import { useState } from 'react';
 
+// The main application component that handles the overall page state.
 export default function Home() {
+  // State to determine whether to show the landing page or the main app.
   const [showApp, setShowApp] = useState(false);
+  // State to store the recorded audio blob.
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
+  /**
+   * Handles the completion of a voice recording.
+   * @param {Blob} blob The audio data as a Blob.
+   */
   const handleRecordingComplete = (blob: Blob) => {
     setAudioBlob(blob);
     console.log('Recording completed:', blob);
-    // Later we'll send this to speech recognition API
+    // In a future step, this blob would be sent to a speech recognition API.
   };
 
-  // If user wants to access the app, show the existing functionality
+  // Conditionally render either the main application or the landing page.
   if (showApp) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
         <div className="container mx-auto px-4">
-          {/* Back to Landing */}
+          {/* Button to go back to the landing page */}
           <button
             onClick={() => setShowApp(false)}
             className="mb-4 text-blue-600 hover:text-blue-800 flex items-center"
           >
-            ← Back to Home
+            &larr; Back to Home
           </button>
 
-          {/* Header */}
+          {/* Application Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-800 mb-2 font-arabic">
               كليمة - Kalima
@@ -63,7 +67,7 @@ export default function Home() {
               expectedText="مرحبا"
             />
 
-            {/* Recording Status */}
+            {/* Recording Status Display */}
             {audioBlob && (
               <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <p className="text-green-800 text-center">
@@ -76,7 +80,7 @@ export default function Home() {
             )}
           </div>
 
-          {/* Development Progress */}
+          {/* Development Progress Section */}
           <div className="max-w-2xl mx-auto mt-8">
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
@@ -119,6 +123,7 @@ export default function Home() {
     );
   }
 
-  // Show landing page by default
+  // By default, show the landing page. The onGetStarted prop is a function
+  // that will update the state to show the main application.
   return <LandingPage onGetStarted={() => setShowApp(true)} />;
 }

@@ -63,7 +63,9 @@ export default function VoiceRecorder({ onRecordingComplete, expectedText }: Voi
 
     } catch (error) {
       console.error('Error starting recording:', error);
-      alert('Unable to access microphone. Please check your browser permissions.');
+      // Replaced alert() with a custom message box to avoid breaking the iframe.
+      // A more robust solution would be to use a state variable to display a message on the UI.
+      console.log('Unable to access microphone. Please check your browser permissions.');
     }
   }, [onRecordingComplete]);
 
