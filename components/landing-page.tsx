@@ -70,7 +70,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       description: 'Advanced speech recognition technology analyzes your Arabic pronunciation in real-time, providing instant feedback and corrections.'
     },
     {
-      icon: '�',
+      icon: '🎧',
       title: 'Voice-First Learning',
       description: 'Focus on speaking from day one. Our platform prioritizes verbal communication over text-based learning.'
     },
