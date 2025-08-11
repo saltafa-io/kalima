@@ -70,7 +70,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       description: 'Advanced speech recognition technology analyzes your Arabic pronunciation in real-time, providing instant feedback and corrections.'
     },
     {
-      icon: '🎧',
+      icon: '�',
       title: 'Voice-First Learning',
       description: 'Focus on speaking from day one. Our platform prioritizes verbal communication over text-based learning.'
     },
@@ -98,17 +98,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
   const testimonials = [
     {
-      text: `&quot;Kalima has transformed how I learn Arabic. The instant feedback on my pronunciation has accelerated my progress tremendously.&quot;`,
+      text: `"Kalima has transformed how I learn Arabic. The instant feedback on my pronunciation has accelerated my progress tremendously."`,
       author: "Sarah M.",
       role: "Language Student"
     },
     {
-      text: `&quot;As an Arabic teacher, I recommend Kalima to all my students. The AI feedback is surprisingly accurate and helpful.&quot;`,
+      text: `"As an Arabic teacher, I recommend Kalima to all my students. The AI feedback is surprisingly accurate and helpful."`,
       author: "Ahmed K.",
       role: "Arabic Teacher"
     },
     {
-      text: `&quot;I've tried many language apps, but none focus on pronunciation like Kalima. It's exactly what I needed to improve my speaking.&quot;`,
+      text: `"I've tried many language apps, but none focus on pronunciation like Kalima. It's exactly what I needed to improve my speaking."`,
       author: "Maria L.",
       role: "Business Professional"
     }
@@ -345,7 +345,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             ))}
           </div>
           <div className="text-center text-gray-400">
-            © 2024 Kalima. All rights reserved. Made with ❤️ for Arabic learners worldwide.
+            &copy; 2024 Kalima. All rights reserved. Made with &hearts; for Arabic learners worldwide.
           </div>
         </div>
       </footer>
