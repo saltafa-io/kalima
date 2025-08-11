@@ -58,7 +58,7 @@ export default function Home() {
             </div>
 
             {/* Voice Recorder Component */}
-            <VoiceRecorder 
+            <VoiceRecorder
               onRecordingComplete={handleRecordingComplete}
               expectedText="مرحبا"
             />
@@ -70,7 +70,7 @@ export default function Home() {
                   ✅ Recording saved! Size: {Math.round(audioBlob.size / 1024)}KB
                 </p>
                 <p className="text-sm text-green-600 text-center mt-2">
-                  (Next: We'll add speech recognition to analyze your pronunciation)
+                  (Next: We&apos;ll add speech recognition to analyze your pronunciation)
                 </p>
               </div>
             )}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Mic, Square, Play, Pause, ArrowRight, Check, Star, Users, Award, Clock } from 'lucide-react';
+import { Mic, Play, ArrowRight } from 'lucide-react';
 
 // Define the type for the props that this component will receive.
 // This tells TypeScript that LandingPage expects a function called `onGetStarted`.
@@ -70,7 +70,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       description: 'Advanced speech recognition technology analyzes your Arabic pronunciation in real-time, providing instant feedback and corrections.'
     },
     {
-      icon: '🎧',
+      icon: '�',
       title: 'Voice-First Learning',
       description: 'Focus on speaking from day one. Our platform prioritizes verbal communication over text-based learning.'
     },
@@ -98,17 +98,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
   const testimonials = [
     {
-      text: "Kalima has transformed how I learn Arabic. The instant feedback on my pronunciation has accelerated my progress tremendously.",
+      text: `&quot;Kalima has transformed how I learn Arabic. The instant feedback on my pronunciation has accelerated my progress tremendously.&quot;`,
       author: "Sarah M.",
       role: "Language Student"
     },
     {
-      text: "As an Arabic teacher, I recommend Kalima to all my students. The AI feedback is surprisingly accurate and helpful.",
+      text: `&quot;As an Arabic teacher, I recommend Kalima to all my students. The AI feedback is surprisingly accurate and helpful.&quot;`,
       author: "Ahmed K.",
       role: "Arabic Teacher"
     },
     {
-      text: "I've tried many language apps, but none focus on pronunciation like Kalima. It's exactly what I needed to improve my speaking.",
+      text: `&quot;I've tried many language apps, but none focus on pronunciation like Kalima. It's exactly what I needed to improve my speaking.&quot;`,
       author: "Maria L.",
       role: "Business Professional"
     }
@@ -261,7 +261,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           </div>
 
           <p className="mt-8 opacity-80">
-            Click the microphone and say "Marhaban" - our AI will analyze your pronunciation!
+            Click the microphone and say &quot;Marhaban&quot; - our AI will analyze your pronunciation!
           </p>
         </div>
       </section>
@@ -297,7 +297,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-white p-8 rounded-2xl shadow-lg relative">
-                <div className="text-4xl text-blue-500 absolute -top-2 left-6">"</div>
+                <div className="text-4xl text-blue-500 absolute -top-2 left-6">&quot;</div>
                 <p className="text-gray-600 italic mb-6 pt-4">{testimonial.text}</p>
                 <div className="font-semibold text-blue-600">
                   {testimonial.author}
@@ -370,3 +370,4 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 };
 
 export default LandingPage;
+�
