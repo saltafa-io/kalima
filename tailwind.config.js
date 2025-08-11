@@ -6,7 +6,11 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        arabic: ['Noto Sans Arabic', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
-}
+};

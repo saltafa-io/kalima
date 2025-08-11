@@ -174,7 +174,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         
         <div className="container mx-auto px-4 text-center text-white z-10">
           <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-            Master Arabic Pronunciation
+            Master Arabic Speaking
           </h1>
           <div className="font-arabic text-2xl md:text-4xl mb-6 opacity-95" dir="rtl">
             تعلم النطق العربي الصحيح
