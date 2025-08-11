@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Mic, Play, ArrowRight } from 'lucide-react';
 
+// Removed unused imports: Square, Pause, Check, Star, Users, Award, Clock
+
 // Define the type for the props that this component will receive.
-// This tells TypeScript that LandingPage expects a function called `onGetStarted`.
 type LandingPageProps = {
   onGetStarted: () => void;
 };
@@ -59,7 +60,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   const handleJoinBeta = () => {
     setModalContent({
       title: "Join the Beta!",
-      body: "A beta signup form would appear here. We'd collect your email and send you early access when available."
+      body: "A beta signup form would appear here. We&apos;d collect your email and send you early access when available."
     });
   };
 
@@ -70,7 +71,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       description: 'Advanced speech recognition technology analyzes your Arabic pronunciation in real-time, providing instant feedback and corrections.'
     },
     {
-      icon: '�',
+      icon: '🗣️',
       title: 'Voice-First Learning',
       description: 'Focus on speaking from day one. Our platform prioritizes verbal communication over text-based learning.'
     },
@@ -98,17 +99,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
   const testimonials = [
     {
-      text: `"Kalima has transformed how I learn Arabic. The instant feedback on my pronunciation has accelerated my progress tremendously."`,
+      text: '“Kalima has transformed how I learn Arabic. The instant feedback on my pronunciation has accelerated my progress tremendously.”',
       author: "Sarah M.",
       role: "Language Student"
     },
     {
-      text: `"As an Arabic teacher, I recommend Kalima to all my students. The AI feedback is surprisingly accurate and helpful."`,
+      text: '“As an Arabic teacher, I recommend Kalima to all my students. The AI feedback is surprisingly accurate and helpful.”',
       author: "Ahmed K.",
       role: "Arabic Teacher"
     },
     {
-      text: `"I've tried many language apps, but none focus on pronunciation like Kalima. It's exactly what I needed to improve my speaking."`,
+      text: '“I&apos;ve tried many language apps, but none focus on pronunciation like Kalima. It&apos;s exactly what I needed to improve my speaking.”',
       author: "Maria L.",
       role: "Business Professional"
     }
@@ -116,7 +117,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
   const stats = [
     { value: '95%', label: 'Pronunciation Accuracy' },
-    { value: '10K+', label: 'Words & Phrases' },
+    { value: '10K+', label: 'Words &amp; Phrases' },
     { value: '50+', label: 'Interactive Lessons' },
     { value: '24/7', label: 'AI Tutor Available' }
   ];
@@ -204,23 +205,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       <section id="features" className="py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-              Why Choose Kalima?
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Revolutionary AI technology meets traditional Arabic learning methods
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Features</h2>
+            <p className="max-w-xl mx-auto text-gray-600">
+              Explore the key features that make Kalima your best Arabic pronunciation tutor.
             </p>
           </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-2 border-t-4 border-blue-500"
-              >
-                <div className="text-4xl mb-6">{feature.icon}</div>
-                <h3 className="text-xl font-bold mb-4 text-gray-800">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+          <div className="grid md:grid-cols-3 gap-12 max-w-6xl mx-auto">
+            {features.map(({ icon, title, description }) => (
+              <div key={title} className="bg-white rounded-lg shadow-lg p-8 text-center hover:shadow-2xl transition-shadow">
+                <div className="text-5xl mb-6">{icon}</div>
+                <h3 className="text-xl font-semibold mb-3">{title}</h3>
+                <p className="text-gray-600">{description}</p>
               </div>
             ))}
           </div>
@@ -228,137 +223,93 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       </section>
 
       {/* Demo Section */}
-      <section id="demo" className="py-20 bg-gradient-to-br from-blue-600 to-purple-700 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">Try It Now</h2>
-          <p className="text-lg mb-12 opacity-90 max-w-2xl mx-auto">
-            Experience the power of AI-driven Arabic pronunciation learning
+      <section id="demo" className="py-20 bg-white">
+        <div className="container mx-auto px-4 text-center max-w-3xl">
+          <h2 className="text-3xl font-bold mb-6">Try a Demo</h2>
+          <p className="mb-6 text-gray-700">
+            Click the button below to simulate recording your voice and getting instant AI feedback.
           </p>
+          <button
+            onClick={handleDemo}
+            className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-semibold transition"
+          >
+            <Mic className="mr-2 w-6 h-6" />
+            Record & Analyze
+          </button>
+        </div>
+      </section>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-2xl mx-auto">
-            <div className="font-arabic text-4xl md:text-5xl font-bold mb-4" dir="rtl">
-              مرحبا
-            </div>
-            <div className="text-lg mb-8 opacity-80">
-              mar-ha-ban (Hello)
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={handleDemo}
-                className="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-full font-medium transition-all hover:scale-105 border border-white/30 flex items-center justify-center"
-              >
-                <Mic className="mr-2 w-5 h-5" />
-                Record Your Voice
-              </button>
-              <button
-                onClick={handlePlayExample}
-                className="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-full font-medium transition-all hover:scale-105 border border-white/30 flex items-center justify-center"
-              >
-                <Play className="mr-2 w-5 h-5" />
-                Hear Example
-              </button>
-            </div>
-          </div>
-
-          <p className="mt-8 opacity-80">
-            Click the microphone and say &quot;Marhaban&quot; - our AI will analyze your pronunciation!
-          </p>
+      {/* Testimonials Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <h2 className="text-3xl font-bold text-center mb-12">What Users Say</h2>
+          {testimonials.map(({ text, author, role }, i) => (
+            <blockquote
+              key={i}
+              className="mb-10 bg-white rounded-lg p-8 shadow-md italic text-gray-700 relative"
+            >
+              <p className="mb-4">{text}</p>
+              <footer className="font-semibold text-gray-900">
+                {author}, <span className="text-sm font-normal text-gray-600">{role}</span>
+              </footer>
+            </blockquote>
+          ))}
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-gray-900 text-white">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {stats.map((stat, index) => (
-              <div key={index}>
-                <div className="text-3xl md:text-4xl font-bold text-blue-400 mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-sm md:text-base opacity-80">{stat.label}</div>
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
+            {stats.map(({ value, label }) => (
+              <div key={label} className="border rounded-lg p-6 shadow-sm hover:shadow-md transition">
+                <div className="text-3xl font-bold text-blue-600 mb-2">{value}</div>
+                <div className="text-gray-600 font-semibold">{label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-              What Our Users Say
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Join thousands of learners mastering Arabic pronunciation
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white p-8 rounded-2xl shadow-lg relative">
-                <div className="text-4xl text-blue-500 absolute -top-2 left-6">&quot;</div>
-                <p className="text-gray-600 italic mb-6 pt-4">{testimonial.text}</p>
-                <div className="font-semibold text-blue-600">
-                  {testimonial.author}
-                </div>
-                <div className="text-sm text-gray-500">{testimonial.role}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-br from-blue-600 to-purple-700 text-white text-center">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">Ready to Master Arabic?</h2>
-          <p className="text-lg mb-12 max-w-2xl mx-auto opacity-90">
-            Join our beta program and be among the first to experience the future of Arabic language learning.
+      {/* Contact Section */}
+      <section id="contact" className="py-16 bg-gradient-to-br from-blue-600 to-purple-700 text-white text-center">
+        <div className="container mx-auto px-4 max-w-xl">
+          <h2 className="text-3xl font-bold mb-6">Stay Updated</h2>
+          <p className="mb-6 opacity-90">
+            Join our mailing list to get the latest updates about Kalima’s launch and new features.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={handleJoinBeta}
-              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all hover:scale-105 hover:shadow-xl"
-            >
-              Join Beta Program
-            </button>
-            <button className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all hover:scale-105 backdrop-blur-sm border border-white/30">
-              Schedule Demo
-            </button>
-          </div>
+          <button
+            onClick={handleJoinBeta}
+            className="bg-white text-blue-700 font-semibold px-8 py-3 rounded-full hover:bg-gray-100 transition"
+          >
+            Join Beta
+          </button>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-center gap-8 mb-8">
-            {['About', 'Privacy', 'Terms', 'Support', 'Blog'].map((link) => (
-              <a
-                key={link}
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                {link}
-              </a>
-            ))}
-          </div>
-          <div className="text-center text-gray-400">
-            &copy; 2024 Kalima. All rights reserved. Made with &hearts; for Arabic learners worldwide.
-          </div>
-        </div>
-      </footer>
-
-      {/* Modal Dialog */}
+      {/* Modal */}
       {modalContent && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full transform transition-all animate-slide-up">
-            <h3 className="text-xl font-bold mb-4 text-gray-800">{modalContent.title}</h3>
-            <p className="text-gray-600 mb-6">{modalContent.body}</p>
+        <div
+          onClick={() => setModalContent(null)}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 cursor-pointer"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-lg max-w-md w-full p-6 text-gray-900"
+          >
+            <h3 id="modal-title" className="text-xl font-semibold mb-4">
+              {modalContent.title}
+            </h3>
+            <p id="modal-description" className="mb-6 whitespace-pre-wrap">
+              {modalContent.body}
+            </p>
             <button
               onClick={() => setModalContent(null)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-lg w-full transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
             >
               Close
             </button>

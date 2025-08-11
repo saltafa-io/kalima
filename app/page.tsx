@@ -32,6 +32,7 @@ export default function Home() {
           <button
             onClick={() => setShowApp(false)}
             className="mb-4 text-blue-600 hover:text-blue-800 flex items-center"
+            aria-label="Back to Home"
           >
             &larr; Back to Home
           </button>
