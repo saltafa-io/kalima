@@ -1,34 +1,26 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Mic, Play, ArrowRight } from 'lucide-react';
+import { Mic, ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-// Removed unused imports: Square, Pause, Check, Star, Users, Award, Clock
-
-// Define the type for the props that this component will receive.
-type LandingPageProps = {
-  onGetStarted: () => void;
-};
-
-const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
+const LandingPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isNavScrolled, setIsNavScrolled] = useState(false);
-  // State to manage the modal dialog
-  const [modalContent, setModalContent] = useState<{title: string, body: string} | null>(null);
+  const [modalContent, setModalContent] = useState<{ title: string; body: string } | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    // Loading effect
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
 
-    // Scroll effect for navbar
     const handleScroll = () => {
       setIsNavScrolled(window.scrollY > 50);
     };
 
     window.addEventListener('scroll', handleScroll);
-    
+
     return () => {
       clearTimeout(timer);
       window.removeEventListener('scroll', handleScroll);
@@ -42,25 +34,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
     }
   };
 
-  // Updated handlers to use the modal instead of alert()
   const handleDemo = () => {
     setModalContent({
-      title: "Demo Feature",
-      body: "In the full app, this would use the Web Audio API to record your voice and send it to our AI for analysis."
-    });
-  };
-
-  const handlePlayExample = () => {
-    setModalContent({
-      title: "Native Speaker Audio",
-      body: "The full app includes high-quality Arabic audio from native speakers to help you learn."
+      title: 'Demo Feature',
+      body: 'In the full app, this would use the Web Audio API to record your voice and send it to our AI for analysis.',
     });
   };
 
   const handleJoinBeta = () => {
     setModalContent({
-      title: "Join the Beta!",
-      body: "A beta signup form would appear here. We&apos;d collect your email and send you early access when available."
+      title: 'Join the Beta!',
+      body: 'A beta signup form would appear here. We&apos;d collect your email and send you early access when available.',
     });
   };
 
@@ -68,58 +52,58 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
     {
       icon: '🎯',
       title: 'AI-Powered Pronunciation',
-      description: 'Advanced speech recognition technology analyzes your Arabic pronunciation in real-time, providing instant feedback and corrections.'
+      description: 'Advanced speech recognition technology analyzes your Arabic pronunciation in real-time, providing instant feedback and corrections.',
     },
     {
       icon: '🗣️',
       title: 'Voice-First Learning',
-      description: 'Focus on speaking from day one. Our platform prioritizes verbal communication over text-based learning.'
+      description: 'Focus on speaking from day one. Our platform prioritizes verbal communication over text-based learning.',
     },
     {
       icon: '📊',
       title: 'Progress Tracking',
-      description: 'Detailed analytics show your improvement over time, highlighting strengths and areas for focused practice.'
+      description: 'Detailed analytics show your improvement over time, highlighting strengths and areas for focused practice.',
     },
     {
       icon: '🌍',
       title: 'Multiple Dialects',
-      description: 'Learn Modern Standard Arabic and regional dialects with native speaker audio examples.'
+      description: 'Learn Modern Standard Arabic and regional dialects with native speaker audio examples.',
     },
     {
       icon: '📱',
       title: 'Mobile Optimized',
-      description: 'Practice anywhere, anytime with our responsive web app that works seamlessly on all devices.'
+      description: 'Practice anywhere, anytime with our responsive web app that works seamlessly on all devices.',
     },
     {
       icon: '⚡',
       title: 'Instant Feedback',
-      description: 'Get immediate pronunciation scores and suggestions for improvement with our advanced AI analysis.'
-    }
+      description: 'Get immediate pronunciation scores and suggestions for improvement with our advanced AI analysis.',
+    },
   ];
 
   const testimonials = [
     {
       text: '“Kalima has transformed how I learn Arabic. The instant feedback on my pronunciation has accelerated my progress tremendously.”',
-      author: "Sarah M.",
-      role: "Language Student"
+      author: 'Sarah M.',
+      role: 'Language Student',
     },
     {
       text: '“As an Arabic teacher, I recommend Kalima to all my students. The AI feedback is surprisingly accurate and helpful.”',
-      author: "Ahmed K.",
-      role: "Arabic Teacher"
+      author: 'Ahmed K.',
+      role: 'Arabic Teacher',
     },
     {
       text: '“I&apos;ve tried many language apps, but none focus on pronunciation like Kalima. It&apos;s exactly what I needed to improve my speaking.”',
-      author: "Maria L.",
-      role: "Business Professional"
-    }
+      author: 'Maria L.',
+      role: 'Business Professional',
+    },
   ];
 
   const stats = [
     { value: '95%', label: 'Pronunciation Accuracy' },
     { value: '10K+', label: 'Words &amp; Phrases' },
     { value: '50+', label: 'Interactive Lessons' },
-    { value: '24/7', label: 'AI Tutor Available' }
+    { value: '24/7', label: 'AI Tutor Available' },
   ];
 
   if (isLoading) {
@@ -136,16 +120,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-40 transition-all duration-300 ${
-        isNavScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg' 
-          : 'bg-transparent'
-      }`}>
+      <nav
+        className={`fixed top-0 w-full z-40 transition-all duration-300 ${
+          isNavScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
+        }`}
+      >
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <div className={`font-arabic text-xl font-bold transition-colors ${
-              isNavScrolled ? 'text-blue-600' : 'text-white'
-            }`}>
+            <div
+              className={`font-arabic text-xl font-bold transition-colors ${
+                isNavScrolled ? 'text-blue-600' : 'text-white'
+              }`}
+            >
               كليمة Kalima
             </div>
             <div className="hidden md:flex space-x-8">
@@ -167,15 +153,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
       {/* Hero Section */}
       <section className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center relative overflow-hidden">
-        {/* Floating Elements */}
         <div className="absolute top-20 left-10 text-white/10 text-6xl font-arabic animate-bounce">مرحبا</div>
         <div className="absolute top-60 right-10 text-white/10 text-6xl font-arabic animate-bounce delay-1000">شكرا</div>
         <div className="absolute bottom-20 left-20 text-white/10 text-6xl font-arabic animate-bounce delay-2000">أهلا</div>
-        
-        <div className="container mx-auto px-4 text-center text-white z-10">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-            Master Arabic Speaking
-          </h1>
+        <div className="text-center text-white px-4">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">Master Arabic Speaking</h1>
           <div className="font-arabic text-2xl md:text-4xl mb-6 opacity-95" dir="rtl">
             تعلم النطق العربي الصحيح
           </div>
@@ -183,9 +165,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             Learn Arabic with AI-powered voice feedback. Perfect your pronunciation with real-time analysis and personalized coaching.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {/* The onClick handler is now connected to the onGetStarted prop */}
             <button
-              onClick={onGetStarted}
+              onClick={() => router.push('/auth')}
               className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all hover:scale-105 hover:shadow-xl flex items-center justify-center"
             >
               Try Free Demo
