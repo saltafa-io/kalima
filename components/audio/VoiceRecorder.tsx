@@ -87,17 +87,17 @@ export default function VoiceRecorder({
             setError('Failed to access microphone. Please check permissions.');
           });
       }
-    }
 
-    return () => {
-      if (recognition) {
-        recognition.stop();
-      }
-      if (mediaRecorder) {
-        mediaRecorder.stop();
-      }
-    };
-  }, [language, onResult, onRecordingChange, onRecordingComplete, expectedText]);
+      return () => {
+        if (recognition) {
+          recognition.stop();
+        }
+        if (mediaRecorder) {
+          mediaRecorder.stop();
+        }
+      };
+    }
+  }, [language, onResult, onRecordingChange, onRecordingComplete, expectedText, audioChunks, mediaRecorder, recognition]);
 
   const startRecording = () => {
     if ((recognition || mediaRecorder) && !isRecording) {

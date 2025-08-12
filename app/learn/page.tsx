@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import VoiceRecorder from '../../components/audio/VoiceRecorder';
 import { ArrowLeft, LogOut } from 'lucide-react';
 
-export default function LearnPage() {
+function LearnContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [lessons, setLessons] = useState<string[]>([]);
+  const [_lessons, setLessons] = useState<string[]>([]); // Marked as unused with underscore
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentLesson, setCurrentLesson] = useState<string | undefined>(undefined);
@@ -34,7 +34,7 @@ export default function LearnPage() {
         if (lessonsParam) {
           try {
             const decodedLessons = JSON.parse(decodeURIComponent(lessonsParam));
-            if (Array.isArray(decodedLessons) && decodedLessons.length > 0 && decodedLessons.every((l: any) => typeof l === 'string')) {
+            if (Array.isArray(decodedLessons) && decodedLessons.length > 0 && decodedLessons.every((l: string) => typeof l === 'string')) {
               setLessons(decodedLessons);
               setCurrentLesson(decodedLessons[0]);
             } else {
@@ -136,5 +136,17 @@ export default function LearnPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LearnPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center">
+        <p className="text-white text-xl font-arabic">جارٍ التحميل...</p>
+      </main>
+    }>
+      <LearnContent />
+    </Suspense>
   );
 }
