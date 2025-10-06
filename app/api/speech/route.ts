@@ -1,20 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const MAX_AUDIO_BYTES = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_MIME = new Set([
+  'audio/wav',
+  'audio/x-wav',
+  'audio/mpeg',
+  'audio/mp3',
+  'audio/webm',
+  'audio/ogg',
+  'audio/x-m4a',
+  'audio/m4a'
+]);
+
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const audioFile = formData.get('audio') as File;
-    const expectedText = formData.get('expectedText') as string;
-
-    if (!audioFile) {
-      return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
+    const contentType = request.headers.get('content-type') || '';
+    if (!contentType.includes('multipart/form-data')) {
+      return NextResponse.json({ error: 'Content-Type must be multipart/form-data' }, { status: 400 });
     }
 
-    // For now, we'll simulate the API response
-    // Later we'll replace this with actual OpenAI Whisper API call
+    const formData = await request.formData();
+
+    const audioFile = formData.get('audio') as File | null;
+    const expectedTextVal = formData.get('expectedText');
+    const modeVal = (formData.get('mode') as string) || 'mock';
+
+    if (!audioFile) {
+      return NextResponse.json({ error: 'No audio file provided (field name `audio`)' }, { status: 400 });
+    }
+
+    if (!(audioFile instanceof File)) {
+      return NextResponse.json({ error: 'Uploaded audio is not a valid File' }, { status: 400 });
+    }
+
+    if (typeof audioFile.size === 'number' && audioFile.size > MAX_AUDIO_BYTES) {
+      return NextResponse.json({ error: `Audio file too large. Max ${MAX_AUDIO_BYTES} bytes allowed.` }, { status: 413 });
+    }
+
+    const mime = (audioFile.type || '').toLowerCase();
+    if (mime && !ALLOWED_MIME.has(mime)) {
+      return NextResponse.json({ error: `Unsupported audio mime type: ${mime}` }, { status: 415 });
+    }
+
+    const expectedText = typeof expectedTextVal === 'string' ? expectedTextVal : '';
+
+    // Mode: 'mock' (default) or 'real' (call external STT/LLM). If real mode is requested but
+    // we don't have credentials, return 501 to indicate not implemented/available.
+    const mode = (modeVal || 'mock').toString();
+    if (mode === 'real') {
+      // Example: require OPENAI_API_KEY or WHISPER_API_KEY to be present in environment
+      if (!process.env.OPENAI_API_KEY && !process.env.WHISPER_API_KEY) {
+        return NextResponse.json({ error: 'Real transcription mode requested but server is not configured (missing API key)' }, { status: 501 });
+      }
+      // TODO: call external STT provider here (Whisper/OpenAI/other)
+      return NextResponse.json({ error: 'Real transcription mode not yet implemented on server' }, { status: 501 });
+    }
+
+    // For now, mock transcription path
     const mockTranscription = simulateTranscription(expectedText);
-    
-    // Simple pronunciation scoring (we'll improve this)
+
     const pronunciationScore = calculatePronunciationScore(
       mockTranscription.transcribed,
       expectedText
@@ -28,14 +72,15 @@ export async function POST(request: NextRequest) {
         pronunciation_score: pronunciationScore,
         confidence: mockTranscription.confidence,
         feedback: generateFeedback(pronunciationScore),
-        phoneme_analysis: mockTranscription.phonemes
+        phoneme_analysis: mockTranscription.phonemes,
+        mode: 'mock'
       }
     });
 
   } catch (error) {
     console.error('Speech processing error:', error);
     return NextResponse.json(
-      { error: 'Failed to process audio' }, 
+      { error: 'Failed to process audio', details: (error as any)?.message || String(error) }, 
       { status: 500 }
     );
   }

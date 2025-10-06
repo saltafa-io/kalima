@@ -183,6 +183,11 @@ Use this area to record every change to the project with date and version. Add a
    - Reason: Update messaging to emphasize AI voice agents and add a mock AI-agent demo for faster iteration.
    - Notes: `VoiceRecorder` was refactored to use refs and improve lifecycle handling. Demo API returns deterministic mock replies. Demo UI supports multi-turn conversation history.
 
+- 2025-10-07 v0.1.2 — Server: speech API validation and mode flag added.
+   - Files changed: `app/api/speech/route.ts`.
+   - Reason: Harden server endpoint to validate multipart/form-data input, enforce file size and mime-type limits, and provide a `mode` flag (`mock|real`) so demo clients can request mock deterministic responses or opt into real STT when configured.
+   - Notes: Real transcription mode returns 501 unless `OPENAI_API_KEY` or `WHISPER_API_KEY` is provided; size limit set to 5MB. Returns clear JSON error codes for invalid input.
+
 ### Template for future entries
 - YYYY-MM-DD vX.Y.Z — Short description of changes
   - Files changed: list
