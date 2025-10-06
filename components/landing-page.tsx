@@ -157,26 +157,26 @@ const LandingPage: React.FC = () => {
         <div className="absolute top-60 right-10 text-white/10 text-6xl font-arabic animate-bounce delay-1000">شكرا</div>
         <div className="absolute bottom-20 left-20 text-white/10 text-6xl font-arabic animate-bounce delay-2000">أهلا</div>
         <div className="text-center text-white px-4">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">Master Arabic Speaking</h1>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">Speak Arabic with confidence</h1>
           <div className="font-arabic text-2xl md:text-4xl mb-6 opacity-95" dir="rtl">
-            تعلم النطق العربي الصحيح
+            تحدث بالعربية بثقة — ممارسة حوارية مدعومة بالذكاء الاصطناعي
           </div>
           <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Learn Arabic with AI-powered voice feedback. Perfect your pronunciation with real-time analysis and personalized coaching.
+            Personalized, voice-first lessons and AI conversation partners help you build real speaking skills — practice dialogues, role-play real situations, and get gentle feedback to improve.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => router.push('/auth')}
+              onClick={() => router.push('/demo')}
               className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all hover:scale-105 hover:shadow-xl flex items-center justify-center"
             >
-              Try Free Demo
+              Try the AI Agent
               <ArrowRight className="ml-2 w-5 h-5" />
             </button>
             <button
-              onClick={() => scrollToSection('features')}
+              onClick={() => router.push('/auth')}
               className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all hover:scale-105 backdrop-blur-sm border border-white/30"
             >
-              Learn More
+              Start Learning
             </button>
           </div>
         </div>
@@ -188,17 +188,17 @@ const LandingPage: React.FC = () => {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Features</h2>
             <p className="max-w-xl mx-auto text-gray-600">
-              Explore the key features that make Kalima your best Arabic pronunciation tutor.
+                Explore the key features that make Kalima a conversational, voice-first Arabic learning platform.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-12 max-w-6xl mx-auto">
-            {features.map(({ icon, title, description }) => (
-              <div key={title} className="bg-white rounded-lg shadow-lg p-8 text-center hover:shadow-2xl transition-shadow">
-                <div className="text-5xl mb-6">{icon}</div>
-                <h3 className="text-xl font-semibold mb-3">{title}</h3>
-                <p className="text-gray-600">{description}</p>
-              </div>
-            ))}
+              {features.map(({ icon, title, description }) => (
+                <div key={title} className="bg-white rounded-lg shadow-lg p-8 text-center hover:shadow-2xl transition-shadow">
+                  <div className="text-5xl mb-6">{icon}</div>
+                  <h3 className="text-xl font-semibold mb-3">{title}</h3>
+                  <p className="text-gray-600">{description}</p>
+                </div>
+              ))}
           </div>
         </div>
       </section>
