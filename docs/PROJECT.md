@@ -224,6 +224,10 @@ Note: the long-term vision is to use speech transcription and generative models 
   - [ ] Grammar tutor (formal instruction)
   - [ ] Cultural guide (contextual learning)
   - [✅] Pronunciation coach (detailed feedback) (v0.2.6)
+  - [✅] Conversation partner (casual dialogue) (v0.2.0)
+  - [ ] Grammar tutor (formal instruction)
+  - [ ] Cultural guide (contextual learning)
+  - [✅] Pronunciation coach (detailed feedback) (v0.2.6)
   - [✅] Progress mentor (tracking & motivation) (v0.4.0)
 
 ### 2. Voice Interaction & Speech Processing
@@ -287,7 +291,7 @@ Note: the long-term vision is to use speech transcription and generative models 
 
 ### 5. User Experience & Interface
 - [ ] Conversation Interface
-  - [✅] Basic voice recording UI (v0.1.3)
+  - [✅] Basic voice recording UI (v0.1.3, v0.4.7)
   - [✅] Demo conversation flow (v0.1.4, v0.2.8)
   - [ ] Rich conversation history
   - [ ] Visual pronunciation guides
@@ -295,8 +299,8 @@ Note: the long-term vision is to use speech transcription and generative models 
 
 - [ ] Progress & Stats
   - [✅] Dashboard implementation (v0.3.6)
-  - [✅] Progress visualizations (v0.3.6)
-  - [ ] Achievement displays
+  - [✅] Progress visualizations (v0.3.6, v0.4.6)
+  - [✅] Achievement displays (Completed curricula marked on dashboard)
   - [ ] Learning insights
   - [ ] Goal tracking
 
@@ -397,6 +401,32 @@ Priority 3 (2+ months)
 ## Changelog (versioned entries)
 
 Use this area to record every change to the project with date and version. Add a new entry for each pull request / change you make.
+
+### Unreleased
+- 2025-10-14 v0.4.6 — Feature: Enhanced User Dashboard
+  - Files changed: `app/dashboard/page.tsx`
+  - Reason: To improve the user experience by making the dashboard more professional, personalized, and intuitive.
+  - Notes:
+    - Added a personalized welcome message for the user.
+    - Implemented a skeleton loading state for a smoother UI.
+    - Updated curriculum cards to show the title of the next lesson, providing clearer context.
+    - Added a "Completed! 🎉" state for finished curricula.
+    - Improved overall layout with a main header and a clear call-to-action to browse new curricula.
+
+- 2025-10-14 v0.4.5 — Fix: Corrected post-authentication redirect flow
+  - Files changed: `app/auth/page.tsx`
+  - Reason: Users with existing profiles were being incorrectly redirected to `/learn` without context, causing an error.
+  - Notes: The redirect is now correctly pointed to `/dashboard`, which is the intended landing page for enrolled users.
+
+- 2025-10-14 v0.4.4 — Refactor: Implemented lazy initialization for OpenAI client
+  - Files changed: `lib/ai/openai.ts`, `app/dashboard/page.tsx`
+  - Reason: To fix a build-time error where `OPENAI_API_KEY` was required during `next build`.
+  - Notes: The OpenAI client is now initialized only when an API call is made, not at module load time. This is a more robust pattern.
+
+- 2025-10-14 v0.4.3 — Fix: Resolved build failure from syntax error
+  - Files changed: `lib/ai/agent.ts`
+  - Reason: A duplicated code block at the end of the file was causing a syntax error.
+  - Notes: Removed the duplicated code to allow the build to succeed.
 
 ### Unreleased
 - 2025-10-14 v0.4.2 — Refactor: Improve Type Safety and Error Handling in AI Agent and API
