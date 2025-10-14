@@ -101,8 +101,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Speech processing error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Failed to process audio', details: (error as any)?.message || String(error) }, 
+      { error: 'Failed to process audio', details: errorMessage },
       { status: 500 }
     );
   }

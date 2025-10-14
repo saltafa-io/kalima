@@ -51,8 +51,8 @@ export default function DemoPage() {
       ]);
       setInputText('');
       setLastAudio(null);
-    } catch (err: any) {
-      setError(err.message || String(err));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }

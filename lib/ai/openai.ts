@@ -1,10 +1,16 @@
 import OpenAI from 'openai';
 import { Retrier } from '@humanwhocodes/retry';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -17,7 +23,7 @@ export async function generateResponse(
   temperature: number = 0.7
 ): Promise<string> {
   // Retry on network errors or 5xx server errors from OpenAI
-  const retrier = new Retrier((err: any) => {
+  const retrier = new Retrier((err: Error) => {
     // Don't retry on 4xx client errors
     if (err instanceof OpenAI.APIError && err.status && err.status >= 400 && err.status < 500) {
       return false;
@@ -28,7 +34,7 @@ export async function generateResponse(
 
   try {
     return await retrier.retry(async () => {
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAIClient().chat.completions.create({
         model: "gpt-4-1106-preview", // Using latest GPT-4 with better Arabic support
         messages: [
           { role: "system", content: systemPrompt },
@@ -53,7 +59,7 @@ export async function transcribeAudio(audioBlob: Blob): Promise<string> {
     // Convert blob to file
     const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
 
-    const transcription = await openai.audio.transcriptions.create({
+    const transcription = await getOpenAIClient().audio.transcriptions.create({
       file: audioFile,
       model: "whisper-1",
       language: "ar",
@@ -68,9 +74,9 @@ export async function transcribeAudio(audioBlob: Blob): Promise<string> {
   }
 }
 
-export async function analyzePromptStructure(prompt: string): Promise<any> {
+export async function analyzePromptStructure(prompt: string): Promise<Record<string, unknown>> {
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: "gpt-4-1106-preview",
       messages: [
         {

@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { Curriculum } from '../../types/curriculum';
-import { User } from '@supabase/supabase-js';
-import { BookOpen, User as UserIcon, TrendingUp, CheckCircle } from 'lucide-react';
+import type { User } from '@supabase/supabase-js';
+import { TrendingUp } from 'lucide-react';
 
 export default function CurriculaPage() {
   const router = useRouter();
@@ -95,8 +95,12 @@ export default function CurriculaPage() {
       params.set('enrollmentId', enrollmentId);
       router.push(`/learn?${params.toString()}`);
 
-    } catch (err: any) {
-      setError(`Failed to enroll: ${err.message}`);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(`Failed to enroll: ${err.message}`);
+      } else {
+        setError('An unexpected error occurred during enrollment.');
+      }
       setEnrolling(null);
     }
   };

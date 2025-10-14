@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
     if (sessionError || !session) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
-    const user = session.user;
 
     // 2. Get lessonId and enrollmentId from the request body
     const { lessonId, enrollmentId } = await request.json();
@@ -34,8 +33,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, message: 'Lesson marked as complete.' });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error completing lesson:', error);
-    return NextResponse.json({ error: 'Failed to complete lesson', details: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json(
+      { error: 'Failed to complete lesson', details: errorMessage },
+      { status: 500 }
+    );
   }
 }

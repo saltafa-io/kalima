@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useEffect, useState, useTransition } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import VoiceRecorder from '../../components/audio/VoiceRecorder';
@@ -108,9 +108,8 @@ function LearnContent() {
 
       setConversationHistory((h) => [...h, { user: { text }, agent: data }]);
       setLastAudio(null);
-      setInputText('');
-    } catch (err: any) {
-      setError(err.message || String(err));
+      setInputText('');    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsAgentReplying(false);
     }
@@ -147,8 +146,8 @@ function LearnContent() {
       }
       // On success, redirect to the dashboard to see the updated progress
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to complete lesson.');
       setIsCompleting(false);
     }
   };

@@ -17,12 +17,11 @@ export default function Enrollment({ userId }: EnrollmentProps) {
   const [goals, setGoals] = useState<string[]>([]);
   const [newGoal, setNewGoal] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Check for SpeechRecognition support
   const isSpeechSupported = typeof window !== 'undefined' && 
-    (window.SpeechRecognition || window.webkitSpeechRecognition);
+    ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -86,7 +85,11 @@ export default function Enrollment({ userId }: EnrollmentProps) {
       router.push('/curricula');
     } catch (err) {
       console.error('Unexpected error:', err);
-      setError(err.message || 'An unexpected error occurred while saving your profile.');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred while saving your profile.');
+      }
       setIsSaving(false);
     }
   };
@@ -152,7 +155,7 @@ export default function Enrollment({ userId }: EnrollmentProps) {
           {isSpeechSupported && (
             <VoiceRecorder
               onResult={handleVoiceInput}
-              onRecordingChange={setIsRecording}
+              onRecordingChange={() => {}}
               language="ar-SA"
             />
           )}

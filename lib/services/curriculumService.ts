@@ -15,21 +15,26 @@ export interface NextLessonInfo {
  */
 export async function getNextLesson(enrollmentId: string): Promise<NextLessonInfo | null> {
   try {
-    // We need the lesson's objective, so we'll query the tables directly
-    // instead of using the RPC which was designed for the UI.
-    const { data: nextLessonData, error: nextLessonError } = await supabase
+    // First, get the IDs of all completed lessons for this enrollment
+    const { data: completedLessons, error: progressError } = await supabase
+      .from('user_lesson_progress')
+      .select('lesson_id')
+      .eq('enrollment_id', enrollmentId)
+      .eq('status', 'completed');
+
+    if (progressError) throw progressError;
+    const completedLessonIds = (completedLessons || []).map(p => p.lesson_id);
+
+    // Then, find the first lesson that is NOT in the completed list
+    const query = supabase
       .from('lessons')
-      .select('id, title, objective')
-      .in('id', (
-        supabase.from('user_lesson_progress')
-          .select('lesson_id')
-          .eq('enrollment_id', enrollmentId)
-          .eq('status', 'completed')
-          .then(({ data }) => (data || []).map(p => p.lesson_id))
-      ), { isNot: true }) // Select lessons NOT in the completed list
-      .order('order')
-      .limit(1)
-      .single();
+      .select('id, title, objective');
+    
+    if (completedLessonIds.length > 0) {
+      query.not('id', 'in', `(${completedLessonIds.join(',')})`);
+    }
+
+    const { data: nextLessonData, error: nextLessonError } = await query.order('order').limit(1).single();
 
     if (nextLessonError) throw nextLessonError;
     if (!nextLessonData) return null;

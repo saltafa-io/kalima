@@ -21,7 +21,7 @@ export default function VoiceRecorder({
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -42,14 +42,14 @@ export default function VoiceRecorder({
 
     // Initialize SpeechRecognition once if available and requested
     try {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition && (onResultRef.current || expectedText)) {
-        const recog = new SpeechRecognition();
+      const SpeechRecognitionImpl = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognitionImpl && (onResultRef.current || expectedText)) {
+        const recog: SpeechRecognition = new SpeechRecognitionImpl();
         recog.lang = language;
         recog.interimResults = false;
         recog.maxAlternatives = 1;
 
-        recog.onresult = (event: any) => {
+        recog.onresult = (event: SpeechRecognitionEvent) => {
           try {
             const transcript = event.results?.[0]?.[0]?.transcript || '';
             if (onResultRef.current) onResultRef.current(transcript);
@@ -69,7 +69,7 @@ export default function VoiceRecorder({
           }
         };
 
-        recog.onerror = (event: any) => {
+        recog.onerror = (event: SpeechRecognitionErrorEvent) => {
           console.error('Speech recognition error:', event.error || event);
           setError(`Speech recognition failed: ${event.error || 'unknown'}`);
           setIsRecording(false);
@@ -81,8 +81,7 @@ export default function VoiceRecorder({
           onRecordingChangeRef.current(false);
         };
 
-        recognitionRef.current = recog;
-      } else if (!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) && (onResultRef.current || expectedText)) {
+        recognitionRef.current = recog;      } else if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) && (onResultRef.current || expectedText)) {
         setError('Speech recognition is not supported in this browser.');
       }
     } catch (err) {
@@ -111,7 +110,7 @@ export default function VoiceRecorder({
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         streamRef.current = stream;
         const recorder = new MediaRecorder(stream);
-        recorder.ondataavailable = (e: BlobEvent) => {
+        recorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) {
             chunksRef.current.push(e.data);
           }

@@ -1,12 +1,10 @@
 import { 
   AgentConfig,
-  AgentPersonality,
   ConversationContext,
-  ConversationExchange,
   TeachingAction,
   AgentResponse
 } from '../../types/agent';
-import { generateResponse, transcribeAudio, analyzePromptStructure, ChatMessage } from './openai';
+import { generateResponse, ChatMessage } from './openai';
 import { getNextLesson } from '../services/curriculumService';
 
 export class ArabicAIAgent {
@@ -64,7 +62,7 @@ Respond in this JSON structure:
     systemPrompt: string, 
     conversationHistory: ChatMessage[], 
     userInput: string
-  ): Promise<any> {
+  ): Promise<{ parsed: { arabic: string; teaching: TeachingAction[]; nextPrompts: string[] }; raw: string }> {
     // Combine history with the new user input
     const messages: ChatMessage[] = [...conversationHistory, { role: 'user', content: userInput }];
 
@@ -95,7 +93,7 @@ Respond in this JSON structure:
       const llmResponse = await this.callLLM(
         systemPrompt,
         conversationHistory,
-        input
+        input,
       );
       const llmJson = llmResponse.parsed;
       // Process audio if provided

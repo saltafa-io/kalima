@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { ArabicAIAgent } from '../../../lib/ai/agent';
-import { AgentConfig, ConversationContext, UserLevel } from '../../../types/agent';
-import { Lesson } from '../../../types/curriculum';
+import { AgentConfig, ConversationContext } from '../../../types/agent';
 
 export async function POST(request: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
@@ -77,8 +76,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(agentResponse);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in agent API:', error);
-    return NextResponse.json({ error: 'Failed to get response from agent', details: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json(
+      { error: 'Failed to get response from agent', details: errorMessage },
+      { status: 500 }
+    );
   }
 }

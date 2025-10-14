@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useEffect, useState, useTransition } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
-import { User } from '@supabase/supabase-js';
-import { BookCopy, PlayCircle } from 'lucide-react';
+import { PlayCircle } from 'lucide-react';
 
 interface DashboardData {
   enrollment_id: string;
@@ -20,8 +19,6 @@ export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [isContinuing, startTransition] = useTransition();
   const [continuingId, setContinuingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,7 +30,6 @@ export default function DashboardPage() {
         router.push('/auth');
         return;
       }
-      setUser(currentUser);
 
       // Call the RPC function to get all dashboard data in one go
       const { data, error: rpcError } = await supabase.rpc('get_user_dashboard_data');
@@ -71,15 +67,13 @@ export default function DashboardPage() {
       const lessonContent = nextLesson.content;
       const lessonId = nextLesson.lesson_id;
 
-      startTransition(() => {
-        const params = new URLSearchParams();
-        params.set('lessons', JSON.stringify(lessonContent));
-        params.set('lessonId', lessonId);
-        params.set('enrollmentId', enrollmentId);
-        router.push(`/learn?${params.toString()}`);
-      });
-    } catch (err: any) {
-      setError(`Failed to continue lesson: ${err.message}`);
+      const params = new URLSearchParams();
+      params.set('lessons', JSON.stringify(lessonContent));
+      params.set('lessonId', lessonId);
+      params.set('enrollmentId', enrollmentId);
+      router.push(`/learn?${params.toString()}`);
+    } catch (err) {
+      setError(err instanceof Error ? `Failed to continue lesson: ${err.message}` : 'An unexpected error occurred.');
       setContinuingId(null);
     }
   };
@@ -99,7 +93,7 @@ export default function DashboardPage() {
         
         {dashboardData.length === 0 ? (
           <div className="text-center bg-white p-8 rounded-lg shadow-md">
-            <p className="text-gray-600 mb-4">You haven't enrolled in any curricula yet.</p>
+            <p className="text-gray-600 mb-4">You haven&apos;t enrolled in any curricula yet.</p>
             <button
               onClick={() => router.push('/curricula')}
               className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700"
@@ -120,11 +114,11 @@ export default function DashboardPage() {
                     </div>
                     <button
                       onClick={() => handleContinue(item.enrollment_id)}
-                      disabled={isContinuing}
+                      disabled={!!continuingId}
                       className="flex items-center bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-400"
                     >
                       <PlayCircle className="w-5 h-5 mr-2" />
-                      {isContinuing && continuingId === item.enrollment_id ? 'Loading...' : 'Continue'}
+                      {continuingId === item.enrollment_id ? 'Loading...' : 'Continue'}
                     </button>
                   </div>
                   <div className="mt-4">
