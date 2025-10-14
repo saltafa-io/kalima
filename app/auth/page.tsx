@@ -34,7 +34,7 @@ export default function AuthPage() {
           if (!profile.level || !profile.goals?.length) {
             router.push('/enrollment');
           } else {
-            router.push('/learn');
+            router.push('/dashboard');
           }
         }
       } catch (err) {
@@ -59,7 +59,7 @@ export default function AuthPage() {
           if (!profile.level || !profile.goals?.length) {
             router.push('/enrollment');
           } else {
-            router.push('/learn');
+            router.push('/dashboard');
           }
         } else {
           setError(null); // Clear error on sign-out
