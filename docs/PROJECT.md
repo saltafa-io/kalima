@@ -402,6 +402,11 @@ Priority 3 (2+ months)
 
 Use this area to record every change to the project with date and version. Add a new entry for each pull request / change you make.
 
+- 2025-10-14 v0.4.20 — Fix: Correct OAuth redirect handling
+  - Files changed: `app/auth/page.tsx`
+  - Reason: Users were getting stuck on the root page after OAuth login because the redirect URL was incorrect. The client-side code to handle the session token was not being executed.
+  - Notes: Re-added the `redirectTo` prop to the Supabase `Auth` component, ensuring users are always redirected back to the `/auth` page to complete the sign-in flow.
+
 - 2025-10-14 v0.4.19 — Fix: Resolve authentication redirect race condition for existing users
   - Files changed: `app/auth/page.tsx`
   - Reason: Existing users were getting stuck on the auth page due to a race condition between the Supabase `Auth` component's default redirect and the custom `onAuthStateChange` redirect logic.
