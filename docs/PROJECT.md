@@ -402,6 +402,16 @@ Priority 3 (2+ months)
 
 Use this area to record every change to the project with date and version. Add a new entry for each pull request / change you make.
 
+- 2025-10-14 v0.4.18 — Fix: Resolve authentication redirect race condition
+  - Files changed: `app/auth/page.tsx`
+  - Reason: Existing users were getting stuck on the auth page due to a race condition between `getSession()` and `onAuthStateChange` both trying to redirect simultaneously.
+  - Notes: Removed the redundant `checkSession` call inside `useEffect`. The `onAuthStateChange` listener is sufficient to handle both initial session checks and subsequent auth events, eliminating the race condition.
+
+- 2025-10-14 v0.4.17 — Fix: Improve new user login flow
+  - Files changed: `app/auth/page.tsx`
+  - Reason: The auth page was treating a "profile not found" error as a fatal error, preventing new users from being redirected to the enrollment page.
+  - Notes: The logic now correctly identifies the Supabase error code for a missing profile (`PGRST116`) and redirects new users to `/enrollment` as intended.
+
 - 2025-10-14 v0.4.16 — Fix: Handle new user login flow
   - Files changed: `app/auth/page.tsx`
   - Reason: New users were getting stuck on the auth page because the code did not handle cases where a user profile does not exist yet.

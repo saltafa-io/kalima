@@ -12,37 +12,6 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Session error:', error);
-          setError(`Failed to fetch session: ${error.message}`);
-          return;
-        }
-        if (session) {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('name, email, level, goals')
-            .eq('id', session.user.id)
-            .single();
-          if (profileError) {
-            console.error('Profile fetch error:', profileError);
-            setError(`Failed to fetch profile: ${profileError.message}`);
-            return;
-          }
-          if (!profile || !profile.level || !profile.goals?.length) {
-            router.push('/enrollment');
-          } else {
-            router.push('/dashboard');
-          }
-        }
-      } catch (err) {
-        console.error('Unexpected error:', err);
-        setError('An unexpected error occurred. Please try again.');
-      }
-    };
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       try {
         if (session) {
@@ -51,7 +20,9 @@ export default function AuthPage() {
             .select('name, email, level, goals')
             .eq('id', session.user.id)
             .single();
-          if (profileError) {
+          // If the profile doesn't exist, it's a new user. Redirect to enrollment.
+          // The 'PGRST116' code indicates that a single row was requested but not found.
+          if (profileError && profileError.code !== 'PGRST116') {
             console.error('Profile fetch error:', profileError);
             setError(`Failed to fetch profile: ${profileError.message}`);
             return;
@@ -69,8 +40,6 @@ export default function AuthPage() {
         setError('An unexpected error occurred during sign-in. Please try again.');
       }
     });
-
-    checkSession();
 
     return () => subscription.unsubscribe();
   }, [router]);
