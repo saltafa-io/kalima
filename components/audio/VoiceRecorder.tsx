@@ -26,13 +26,24 @@ export default function VoiceRecorder({
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
+  // Use refs for callbacks to avoid re-running the effect
+  const onResultRef = useRef(onResult);
+  const onRecordingChangeRef = useRef(onRecordingChange);
+  const onRecordingCompleteRef = useRef(onRecordingComplete);
+
+  useEffect(() => {
+    onResultRef.current = onResult;
+    onRecordingChangeRef.current = onRecordingChange;
+    onRecordingCompleteRef.current = onRecordingComplete;
+  }, [onResult, onRecordingChange, onRecordingComplete]);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     // Initialize SpeechRecognition once if available and requested
     try {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition && (onResult || expectedText)) {
+      if (SpeechRecognition && (onResultRef.current || expectedText)) {
         const recog = new SpeechRecognition();
         recog.lang = language;
         recog.interimResults = false;
@@ -41,12 +52,12 @@ export default function VoiceRecorder({
         recog.onresult = (event: any) => {
           try {
             const transcript = event.results?.[0]?.[0]?.transcript || '';
-            if (onResult) onResult(transcript);
+            if (onResultRef.current) onResultRef.current(transcript);
             // If expectedText provided, we can log match/mismatch (non-blocking)
             if (expectedText) {
               if (transcript.toLowerCase().includes(expectedText.toLowerCase())) {
                 console.log('Pronunciation match:', transcript);
-
+              } else {
                 console.log('Pronunciation mismatch:', { transcript, expectedText });
               }
             }
@@ -54,7 +65,7 @@ export default function VoiceRecorder({
             console.error('onresult handler error', e);
           } finally {
             setIsRecording(false);
-            onRecordingChange(false);
+            onRecordingChangeRef.current(false);
           }
         };
 
@@ -62,57 +73,23 @@ export default function VoiceRecorder({
           console.error('Speech recognition error:', event.error || event);
           setError(`Speech recognition failed: ${event.error || 'unknown'}`);
           setIsRecording(false);
-          onRecordingChange(false);
+          onRecordingChangeRef.current(false);
         };
 
         recog.onend = () => {
           setIsRecording(false);
-          onRecordingChange(false);
+          onRecordingChangeRef.current(false);
         };
 
         recognitionRef.current = recog;
-      } else if (!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) && (onResult || expectedText)) {
+      } else if (!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) && (onResultRef.current || expectedText)) {
         setError('Speech recognition is not supported in this browser.');
       }
     } catch (err) {
       console.error('SpeechRecognition init error', err);
       setError('Failed to initialize speech recognition.');
     }
-
-    // Initialize MediaRecorder if onRecordingComplete is provided
-    if (onRecordingComplete) {
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then((stream) => {
-          streamRef.current = stream;
-          try {
-            const recorder = new MediaRecorder(stream);
-            recorder.ondataavailable = (e: BlobEvent) => {
-              if (e.data && e.data.size > 0) {
-                chunksRef.current.push(e.data);
-              }
-            };
-            recorder.onstop = () => {
-              try {
-                const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-                onRecordingComplete(blob);
-              } catch (e) {
-                console.error('Error creating audio blob', e);
-              } finally {
-                chunksRef.current = [];
-              }
-            };
-            recorderRef.current = recorder;
-          } catch (e) {
-            console.error('MediaRecorder init error', e);
-            setError('Failed to initialize audio recorder.');
-          }
-        })
-        .catch((err) => {
-          console.error('getUserMedia error', err);
-          setError('Failed to access microphone. Please check permissions.');
-        });
-    }
-
+    
     return () => {
       try {
         if (recognitionRef.current) {
@@ -120,22 +97,40 @@ export default function VoiceRecorder({
           try { recognitionRef.current.stop(); } catch {}
           recognitionRef.current = null;
         }
-        if (recorderRef.current && recorderRef.current.state !== 'inactive') {
-          try { recorderRef.current.stop(); } catch {}
-        }
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach((t) => t.stop());
-          streamRef.current = null;
-        }
       } catch (e) {
         console.error('cleanup error', e);
       }
     };
-  }, [language, onResult, onRecordingChange, onRecordingComplete, expectedText]);
+  }, [language, expectedText]); // Only re-run if language or expectedText changes
 
-  const startRecording = () => {
+  const startRecording = async () => {
     setError(null);
     try {
+      // Initialize MediaRecorder only when starting recording
+      if (onRecordingCompleteRef.current && !recorderRef.current) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream;
+        const recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = (e: BlobEvent) => {
+          if (e.data && e.data.size > 0) {
+            chunksRef.current.push(e.data);
+          }
+        };
+        recorder.onstop = () => {
+          try {
+            const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+            if (onRecordingCompleteRef.current) {
+              onRecordingCompleteRef.current(blob);
+            }
+          } catch (e) {
+            console.error('Error creating audio blob', e);
+          } finally {
+            chunksRef.current = [];
+          }
+        };
+        recorderRef.current = recorder;
+      }
+
       if (recognitionRef.current && recognitionRef.current.start) {
         recognitionRef.current.start();
       }
@@ -144,12 +139,12 @@ export default function VoiceRecorder({
         recorderRef.current.start();
       }
       setIsRecording(true);
-      onRecordingChange(true);
+      onRecordingChangeRef.current(true);
     } catch (err) {
       console.error('Error starting recording:', err);
       setError('Failed to start recording. Please try again.');
       setIsRecording(false);
-      onRecordingChange(false);
+      onRecordingChangeRef.current(false);
     }
   };
 
@@ -194,5 +189,3 @@ export default function VoiceRecorder({
     </div>
   );
 }
-+
-*** End Patch

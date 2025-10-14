@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useRouter } from 'next/navigation';
 import VoiceRecorder from '../audio/VoiceRecorder';
@@ -18,6 +18,7 @@ export default function Enrollment({ userId }: EnrollmentProps) {
   const [newGoal, setNewGoal] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Check for SpeechRecognition support
   const isSpeechSupported = typeof window !== 'undefined' && 
@@ -52,36 +53,41 @@ export default function Enrollment({ userId }: EnrollmentProps) {
   }, [userId]);
 
   const handleVoiceInput = (result: string) => {
-    if (isRecording) {
-      setNewGoal(result);
-    }
+    setNewGoal(result);
   };
 
   const handleAddGoal = () => {
     if (newGoal.trim()) {
-      setGoals([...goals, newGoal.trim()]);
+      if (!goals.includes(newGoal.trim())) {
+        setGoals([...goals, newGoal.trim()]);
+      }
       setNewGoal('');
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRemoveGoal = (indexToRemove: number) => {
+    setGoals(goals.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
+    setError(null);
     try {
       const { error } = await supabase
         .from('profiles')
         .update({ name, email, level, goals })
         .eq('id', userId);
       if (error) {
-        console.error('Error updating profile:', error);
-        setError(`Failed to save profile: ${error.message}`);
-        return;
+        throw error;
       }
 
-      const lessons = encodeURIComponent(JSON.stringify(['مرحبا', 'شكرا']));
-      router.push(`/learn?lessons=${lessons}`);
+      // Redirect to the curricula page to choose a course
+      router.push('/curricula');
     } catch (err) {
       console.error('Unexpected error:', err);
-      setError('An unexpected error occurred while saving your profile.');
+      setError(err.message || 'An unexpected error occurred while saving your profile.');
+      setIsSaving(false);
     }
   };
 
@@ -166,17 +172,28 @@ export default function Enrollment({ userId }: EnrollmentProps) {
               إضافة
             </button>
           </div>
-          <ul className="mt-2 space-y-1">
+          <ul className="mt-2 space-y-2">
             {goals.map((goal, index) => (
-              <li key={index} className="text-gray-700 font-arabic">{goal}</li>
+              <li key={`${goal}-${index}`} className="flex items-center justify-between bg-gray-100 p-2 rounded-md">
+                <span className="text-gray-700 font-arabic">{goal}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveGoal(index)}
+                  className="text-red-500 hover:text-red-700"
+                  aria-label={`Remove goal: ${goal}`}
+                >
+                  &times;
+                </button>
+              </li>
             ))}
           </ul>
         </div>
         <button
           type="submit"
-          className="w-full py-2 px-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-md hover:from-orange-600 hover:to-red-600 font-arabic"
+          disabled={isSaving}
+          className="w-full py-2 px-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-md hover:from-orange-600 hover:to-red-600 font-arabic disabled:bg-gray-400 disabled:from-gray-400"
         >
-          Submit
+          {isSaving ? 'Saving...' : 'Submit'}
         </button>
       </form>
     </div>
