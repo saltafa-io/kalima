@@ -1,46 +1,66 @@
 "use client";
 
 import React, { useState } from 'react';
+import { AgentResponse } from '../../types/agent';
 import VoiceRecorder from '../../components/audio/VoiceRecorder';
+import PronunciationFeedback from '../../components/feedback/PronunciationFeedback';
 
-type Turn = { speaker: 'user' | 'agent'; text: string };
+type DemoTurn = {
+  user: { text: string };
+  agent: AgentResponse;
+};
 
 export default function DemoPage() {
-  const [transcript, setTranscript] = useState('');
+  const [inputText, setInputText] = useState('');
+  const [lastAudio, setLastAudio] = useState<Blob | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [history, setHistory] = useState<Turn[]>([]);
+  const [history, setHistory] = useState<DemoTurn[]>([]);
 
-  const sendTurn = async (text: string) => {
+  const sendTurn = async (text: string, audio?: Blob | null) => {
+    if (!text && !audio) return;
+
     setError(null);
     setLoading(true);
+
     try {
-      // append user turn
-      setHistory((h) => [...h, { speaker: 'user', text }]);
-
-      const form = new FormData();
-      form.append('transcript', text || '');
-
-      const res = await fetch('/api/demo', {
+      const formData = new FormData();
+      formData.append('input', text);
+      if (audio) {
+        formData.append('audio', audio, 'recording.webm');
+      }
+      
+      // Call the real agent API
+      const res = await fetch('/api/agent', {
         method: 'POST',
-        body: form,
+        body: formData,
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Demo API failed');
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Agent API request failed');
+      }
 
-      setHistory((h) => [...h, { speaker: 'agent', text: data.reply }]);
-      setTranscript('');
+      // Add the full exchange to history
+      setHistory((h) => [
+        ...h,
+        {
+          user: { text },
+          agent: data,
+        },
+      ]);
+      setInputText('');
+      setLastAudio(null);
     } catch (err: any) {
       setError(err.message || String(err));
     } finally {
       setLoading(false);
     }
   };
-
+  
   const handleRecordingComplete = async (blob: Blob) => {
-    // For the mock, we do not send audio, only the recognized transcript
-    await sendTurn(transcript);
+    setLastAudio(blob);
+    // The user can now send the turn with the recorded audio
   };
 
   return (
@@ -54,13 +74,13 @@ export default function DemoPage() {
           <div className="flex space-x-2">
             <input
               type="text"
-              value={transcript}
-              onChange={(e) => setTranscript(e.target.value)}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
               placeholder="اكتب أو سجل مقطعًا صوتيًا"
             />
             <button
-              onClick={() => sendTurn(transcript)}
+              onClick={() => sendTurn(inputText, lastAudio)}
               className="px-4 py-2 bg-blue-600 text-white rounded-md"
             >
               Send
@@ -70,7 +90,7 @@ export default function DemoPage() {
 
         <div className="mb-4">
           <VoiceRecorder
-            onResult={(t) => setTranscript(t)}
+            onResult={(t) => setInputText(t)}
             onRecordingChange={() => {}}
             onRecordingComplete={handleRecordingComplete}
             language="ar-SA"
@@ -82,9 +102,19 @@ export default function DemoPage() {
 
         <div className="mt-6 space-y-3">
           {history.map((turn, i) => (
-            <div key={i} className={`p-3 rounded ${turn.speaker === 'user' ? 'bg-blue-50 self-end' : 'bg-gray-100'}`}>
-              <div className={`text-sm ${turn.speaker === 'user' ? 'text-blue-800' : 'text-gray-800'}`}>{turn.text}</div>
-            </div>
+            <React.Fragment key={i}>
+              {/* User's Turn */}
+              <div className="p-3 rounded bg-blue-50 self-end text-right">
+                <div className="text-sm text-blue-800">{turn.user.text}</div>
+              </div>
+              {/* Agent's Turn */}
+              <div className="p-3 rounded bg-gray-100">
+                <div className="text-sm text-gray-800">{turn.agent.response}</div>
+                {turn.agent.pronunciationFeedback && (
+                  <PronunciationFeedback feedback={turn.agent.pronunciationFeedback} />
+                )}
+              </div>
+            </React.Fragment>
           ))}
         </div>
       </div>

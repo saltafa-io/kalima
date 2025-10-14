@@ -1,0 +1,46 @@
+-- 1. User Enrollments Table
+-- Tracks which user is enrolled in which curriculum.
+CREATE TABLE public.user_enrollments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  curriculum_id uuid NOT NULL REFERENCES public.curricula(id) ON DELETE CASCADE,
+  status text NOT NULL DEFAULT 'in-progress' CHECK (status IN ('in-progress', 'completed')),
+  enrolled_at timestamp with time zone DEFAULT now() NOT NULL,
+  completed_at timestamp with time zone,
+  UNIQUE (user_id, curriculum_id) -- A user can only enroll in a curriculum once
+);
+
+COMMENT ON TABLE public.user_enrollments IS 'Tracks user enrollment in curricula.';
+
+-- 2. User Lesson Progress Table
+-- Tracks a user's progress on individual lessons within an enrollment.
+CREATE TABLE public.user_lesson_progress (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  enrollment_id uuid NOT NULL REFERENCES public.user_enrollments(id) ON DELETE CASCADE,
+  lesson_id uuid NOT NULL REFERENCES public.lessons(id) ON DELETE CASCADE,
+  status text NOT NULL DEFAULT 'not-started' CHECK (status IN ('not-started', 'in-progress', 'completed')),
+  best_score double precision,
+  attempts integer NOT NULL DEFAULT 0,
+  last_attempted_at timestamp with time zone,
+  UNIQUE (enrollment_id, lesson_id) -- Progress for a lesson is unique per enrollment
+);
+
+COMMENT ON TABLE public.user_lesson_progress IS 'Tracks user progress for each lesson in an enrollment.';
+
+-- 3. Enable Row Level Security (RLS)
+ALTER TABLE public.user_enrollments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_lesson_progress ENABLE ROW LEVEL SECURITY;
+
+-- 4. Create RLS Policies
+-- Users can only see and manage their own enrollments and progress.
+CREATE POLICY "Allow users to manage their own enrollments"
+  ON public.user_enrollments FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Allow users to manage their own lesson progress"
+  ON public.user_lesson_progress FOR ALL
+  USING (auth.uid() = (
+    SELECT user_id FROM public.user_enrollments WHERE id = enrollment_id
+  ));
+

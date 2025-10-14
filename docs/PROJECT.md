@@ -1,6 +1,6 @@
 ## Kalima — Project README
 
-Last updated: 2025-10-06
+Last updated: 2025-10-08
 
 This document is the single source-of-truth for the Kalima project. It describes the architecture, important files, environment variables, deployment notes, current known issues, recommended next steps, and includes a changelog template (date/versioned) that we will update as work progresses.
 
@@ -25,14 +25,25 @@ Users sign in with OAuth (Supabase + Google), enroll by providing a profile (nam
   - `app/layout.tsx` — root layout
   - `app/auth/page.tsx` — Supabase Auth UI page and auth state handler
   - `app/enrollment/page.tsx` — enrollment route (protects route and passes userId to component)
-  - `app/api/speech/route.ts` — serverless API route for speech processing (currently mock implementation)
-- `components/` — UI components
-  - `components/landing-page.tsx` — landing page content
-  - `components/audio/VoiceRecorder.tsx` — client-side speech recorder and recognition
+  - `app/demo/page.tsx` — interactive demo with mock AI agent conversation
+  - `app/dashboard/page.tsx` — displays user's enrolled curricula and progress
+  - `app/curricula/page.tsx` — allows users to browse and enroll in curricula
+  - `app/learn/page.tsx` — protected learning interface with voice recording
+  - `app/api/speech/route.ts` — serverless API route for speech processing with modes
+  - `app/api/demo/route.ts` — demo API with deterministic responses
+  - `app/api/agent/route.ts` — main API for interacting with the AI agent
+- `components/` — Reusable UI components
+  - `components/landing-page.tsx` — landing page with updated messaging
+  - `components/audio/VoiceRecorder.tsx` — robust speech recorder with refs
   - `components/enrollment/Enrollment.tsx` — enrollment form and logic
 - `lib/supabase.ts` — Supabase client initialization
 - `package.json` — dependencies and scripts
+- `.github/workflows/ci.yml` — GitHub Actions CI workflow
 
+### New Directories
+- `lib/ai/` — Contains the core AI agent logic and OpenAI integrations.
+- `lib/analysis/` — Contains utility functions for analysis, like pronunciation scoring.
+- `lib/services/` — Contains services for interacting with the database, like `curriculumService.ts`.
 Note: this list covers files relevant to auth, enrollment and speech processing (the current working area).
 
 ## Data model (inferred)
@@ -43,6 +54,12 @@ Note: this list covers files relevant to auth, enrollment and speech processing 
   - `email` (string)
   - `level` (string: beginner|intermediate|advanced)
   - `goals` (array or json)
+- `curricula` — Stores course-level information.
+- `lessons` — Stores individual lessons for each curriculum.
+- `lesson_items` — Stores the specific content (e.g., phrases) for each lesson.
+- `user_enrollments` — Links users to the curricula they are enrolled in.
+- `user_lesson_progress` — Tracks a user's completion status and score for each lesson.
+
 
 Adjust the actual Postgres types in Supabase if needed. The app reads/writes these fields via the Supabase client.
 
@@ -75,15 +92,21 @@ Why this matters
 
 Note: the long-term vision is to use speech transcription and generative models to run interactive voice agents (conversational tutors) that can produce dialogues, role-play scenarios, and adaptive exercises tailored to the user's level and goals.
 
+4. Demo Flow
+   - The demo route `/demo` provides an interactive experience with a mock AI agent
+   - Uses the VoiceRecorder for voice input and maintains a conversation history
+   - Makes API calls to `/api/demo/route.ts` which provides deterministic responses based on keywords
+   - Simulates a multi-turn dialogue to demonstrate the voice agent concept
+
 ## Known issues and risks (current)
 
 1. OAuth redirect mismatch — If provider redirects to root (/) with token fragment rather than the `redirectTo` path the app uses (e.g., `/enrollment`), the client may not detect the session. Fix: configure exact redirect URIs in Supabase and Google.
 
-2. VoiceRecorder potential bugs (medium risk)
-   - `useEffect` dependencies in `VoiceRecorder.tsx` may cause repeated getUserMedia calls and duplicate event handlers.
-   - `audioChunks` is stored in state and used inside `onstop`/`ondataavailable` closures, which can lead to stale closures and empty blobs.
-   - Recognition and MediaRecorder lifecycles are not tightly coordinated; recognition results don't always stop the media recorder.
-   - Type declarations for SpeechRecognition events might not exist in TypeScript DOM lib.
+2. VoiceRecorder considerations (low risk, after refactor)
+   - Monitor memory usage with long recordings (audioChunks in refs)
+   - Consider adding a maximum recording duration limit
+   - Add visual feedback for recording errors
+   - Consider streaming audio for longer recordings
 
 3. `app/api/speech/route.ts` (server) — validation and performance
    - Input validation for `formData` entries is weak. The code trusts casts like `formData.get('audio') as File` and `formData.get('expectedText') as string` without checks.
@@ -95,22 +118,27 @@ Note: the long-term vision is to use speech transcription and generative models 
 
 ## Immediate recommended improvements (high value, low risk)
 
-1. Documentation: add this `docs/PROJECT.md` (done) and maintain changelog entries for each change.
+1. Documentation: add this `docs/PROJECT.md` (✅ done) and maintain changelog entries for each change.
 2. Enrollment UX improvements:
    - Add saving state (disable submit while saving), success feedback and error handling.
    - Client-side validation: required fields, email format, trim input, prevent duplicate goals.
    - Allow removing goals (small UI addition).
-3. VoiceRecorder refactor:
-   - Move recorder/recognition and chunk buffer to refs (avoid re-init on renders).
-   - Initialize SpeechRecognition and MediaRecorder in separate one-time effects.
-   - Ensure `onstop` creates Blob from ref-held chunks and calls `onRecordingComplete` reliably.
-4. API route hardening:
-   - Validate FormData entries, check types, return 400 on invalid input.
-   - Add a `mode` flag (mock|real) for deterministic tests and to integrate the real STT API later.
+3. VoiceRecorder refactor: (✅ done)
+   - Move recorder/recognition and chunk buffer to refs (✅ completed)
+   - Initialize SpeechRecognition and MediaRecorder in separate effects (✅ completed)
+   - Ensure `onstop` creates Blob from ref-held chunks reliably (✅ completed)
+4. API route hardening: (✅ done)
+   - Validate FormData entries, type checks, 400 errors (✅ completed)
+   - Add `mode` flag for mock/real STT (✅ completed)
 5. Auth hardening:
-   - Prefer the authorization-code+PKCE flow for better security (Supabase supports PKCE). This will return a code in the query which the client can exchange instead of tokens in fragments.
-
-6. Landing page repositioning (marketing + UX)
+   - Implement authorization-code+PKCE flow for better security
+   - Update redirect handling for code flow
+6. Demo improvements:
+   - Add more conversation scenarios
+   - Improve error recovery in voice recording
+   - Add loading states and transitions
+   - Track demo engagement metrics
+7. Landing page repositioning (marketing + UX)
     - Goal: reposition the landing page copy and visual emphasis away from a pronunciation-only message toward a holistic, confidence-first spoken-Arabic learning platform powered by AI voice agents.
     - Key messages to highlight on the landing page:
        - "Speak Arabic with confidence — practice anytime with AI voice agents."
@@ -143,18 +171,212 @@ Note: the long-term vision is to use speech transcription and generative models 
 
     - Measurement: track clicks on the demo CTA and sign-ups from the hero. Monitor engagement of the demo flow to iterate on messaging.
 
+## Development Environment Notes
+
+### Terminal Usage
+- Use `cmd` as the default terminal for all development tasks
+- Avoid PowerShell due to permission restrictions
+- Always run npm commands, git operations, and other CLI tools in cmd
+
+### Environment Setup
+
+#### Terminal Configuration
+- Use Windows Command Prompt (cmd) as the default terminal in VS Code:
+  1. Open VS Code Command Palette (Ctrl+Shift+P)
+  2. Type 'Terminal: Select Default Profile'
+  3. Select 'Command Prompt'
+  4. Close and reopen VS Code
+  5. Verify by opening a new terminal (it should be cmd)
+
+#### Development Requirements
+- Node.js v18+ required
+- Use npm as package manager
+- Required environment variables in .env.local:
+  ```env
+  OPENAI_API_KEY=your_api_key_here
+  NEXT_PUBLIC_AI_MODE=mock  # Change to 'real' for OpenAI
+  ```
+- Install dependencies (in cmd terminal):
+  ```cmd
+  cd /d "D:\T42 bkp\D\Development\kalima"
+  npm install openai @types/node
+  ```
+
+## Feature Tracking & Development Status
+
+### 1. AI Conversation Agents (Core Innovation)
+- [ ] AI Agent Architecture
+  - [✅] Basic conversation flow with mock responses (v0.2.1)
+  - [✅] Integration with LLM (GPT-4) (v0.2.5, v0.2.6)
+  - [✅] Context-aware dialogue management (v0.3.9, v0.4.1)
+  - [✅] Personality and teaching style configuration (v0.2.0)
+  - [✅] Error recovery and conversation repair (v0.2.2)
+
+- [ ] Teaching Capabilities
+  - [ ] Dynamic lesson generation
+  - [ ] Adaptive difficulty adjustment
+  - [ ] Cultural context awareness
+  - [ ] Multiple teaching methods
+  - [✅] Progress-based conversation steering (v0.4.0)
+
+- [ ] Agent Specialization
+  - [✅] Conversation partner (casual dialogue) (v0.2.0)
+  - [ ] Grammar tutor (formal instruction)
+  - [ ] Cultural guide (contextual learning)
+  - [✅] Pronunciation coach (detailed feedback) (v0.2.6)
+  - [✅] Progress mentor (tracking & motivation) (v0.4.0)
+
+### 2. Voice Interaction & Speech Processing
+- [ ] Speech Recognition
+  - [✅] Basic voice recording (WebSpeech API) (v0.1.3)
+  - [✅] Mock STT responses
+  - [✅] Real STT integration (Whisper) (v0.2.5)
+  - [ ] Streaming support for long recordings
+  - [ ] Multi-dialect recognition support
+
+- [ ] Pronunciation Analysis
+  - [✅] Basic mock scoring (v0.1.2)
+  - [ ] Phoneme-level analysis
+  - [ ] Real-time feedback
+  - [ ] Accent adaptation
+  - [✅] Detailed correction suggestions (v0.2.6)
+
+### 3. Learning Experience & Progression
+- [ ] User Profiling
+  - [✅] Basic enrollment (level/goals) (v0.1.0)
+  - [ ] Learning style assessment
+  - [ ] Detailed skill assessment
+  - [ ] Interest/context preferences
+  - [ ] Schedule/availability tracking
+
+- [ ] Curriculum Management
+  - [✅] Structured lesson content (v0.3.0, v0.3.1, v0.3.5)
+  - [ ] Dynamic difficulty progression
+  - [ ] Personalized learning paths
+  - [ ] Content recommendation engine
+  - [ ] Review scheduling system
+
+- [ ] Progress Tracking
+  - [✅] Skill progression metrics (v0.3.2, v0.3.8)
+  - [ ] Achievement system
+  - [ ] Learning analytics
+  - [ ] Performance insights
+  - [ ] Progress visualization
+
+### 4. Platform Infrastructure
+- [ ] Authentication & Security
+  - [✅] OAuth with Google (v0.1.0)
+  - [✅] Basic user profiles
+  - [ ] PKCE flow implementation
+  - [ ] Session management
+  - [ ] Rate limiting & abuse prevention
+
+- [ ] Data Management
+  - [✅] Basic Supabase integration
+  - [✅] Analytics implementation (via RPC functions) (v0.3.6, v0.3.7)
+  - [ ] Caching strategy
+  - [ ] Data retention policies
+  - [ ] Backup procedures
+
+- [ ] Performance & Reliability
+  - [✅] Basic error handling
+  - [✅] Input validation
+  - [ ] Load testing
+  - [ ] Performance monitoring
+  - [ ] Service redundancy
+
+### 5. User Experience & Interface
+- [ ] Conversation Interface
+  - [✅] Basic voice recording UI (v0.1.3)
+  - [✅] Demo conversation flow (v0.1.4, v0.2.8)
+  - [ ] Rich conversation history
+  - [ ] Visual pronunciation guides
+  - [✅] Interactive corrections (v0.2.7)
+
+- [ ] Progress & Stats
+  - [✅] Dashboard implementation (v0.3.6)
+  - [✅] Progress visualizations (v0.3.6)
+  - [ ] Achievement displays
+  - [ ] Learning insights
+  - [ ] Goal tracking
+
+- [ ] Mobile & Responsive
+  - [✅] Basic responsive design
+  - [ ] Mobile-optimized recording
+  - [ ] Offline capabilities
+  - [ ] Push notifications
+  - [ ] Cross-device sync
+
+Legend:
+- [✅] Completed
+- [ ] Planned/In Progress
+- [-] Deferred
+
+Next Priority Items:
+1.  **Teaching Capabilities Enhancement:**
+    *   Dynamic lesson generation
+    *   Adaptive difficulty adjustment
+2.  **Pronunciation Analysis Improvement:**
+    *   Phoneme-level analysis
+    *   Real-time feedback
+3.  **Platform Infrastructure Hardening:**
+    *   PKCE flow implementation for authentication
+    *   Streaming support for long audio recordings
+
+Updated: 2025-10-07
+
 ## Testing & quality gates
 
 - Add unit tests for small pure functions (e.g., `levenshteinDistance`, `calculateStringSimilarity`, `generateFeedback`).
 - Add integration tests (Jest + msw or similar) to mock Supabase responses and test the enrollment submit flow.
 - Run linter and TypeScript type checks as part of CI.
 
-## Deployment notes (Vercel)
+## Deployment Configuration (Vercel)
 
-- Ensure the following Vercel environment variables are set for each environment (Production, Preview, Development if used):
-  - `NEXT_PUBLIC_SUPABASE_URL`
-  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- Supabase redirect URLs must include your deployed domain with the exact path used for redirects. Current production domain: `https://kalima-five.vercel.app` and you said the redirect is currently set to `https://kalima-five.vercel.app/enrollment` — confirm the Google OAuth client also contains the same redirect.
+### Environment Variables
+Ensure the following are set in Vercel project settings for all environments (Production, Preview, Development):
+
+1. Supabase Configuration:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+2. OpenAI Configuration:
+   - `OPENAI_API_KEY` (marked as secret)
+   - `NEXT_PUBLIC_AI_MODE` (set to 'real' for production)
+
+### Deployment Settings
+- Production Domain: `https://kalima-five.vercel.app`
+- Framework Preset: Next.js
+- Node.js Version: 18.x
+- Build Command: `npm run build`
+- Output Directory: `.next`
+
+### OAuth Configuration
+- Supabase redirect URL: `https://kalima-five.vercel.app/enrollment`
+- Google OAuth client must include the same redirect URL
+- Test OAuth flow in preview deployments
+
+### Build Optimization
+- Enable caching in `vercel.json`:
+  ```json
+  {
+    "crons": [],
+    "github": {
+      "silent": true
+    },
+    "functions": {
+      "app/api/**/*.ts": {
+        "memory": 1024,
+        "maxDuration": 10
+      }
+    }
+  }
+  ```
+
+### Monitoring
+- Enable Vercel Analytics
+- Set up Error Monitoring
+- Configure Performance Alerts
 
 ## Roadmap (short/medium term)
 
@@ -177,16 +399,40 @@ Priority 3 (2+ months)
 Use this area to record every change to the project with date and version. Add a new entry for each pull request / change you make.
 
 ### Unreleased
+- 2025-10-14 v0.4.2 — Refactor: Improve Type Safety and Error Handling in AI Agent and API
+  - Files changed: `lib/ai/agent.ts`, `app/api/agent/route.ts`
+  - Reason: To improve the robustness and reliability of the AI agent and its corresponding API route.
+  - Notes:
+    - Fixed several bugs in `agent.ts` related to incorrect property access and asynchronous operations.
+    - Hardened the `agent` API route by adding input validation and safer type handling for form data.
+    - Removed unused imports and improved code quality.
+
 - 2025-10-06 v0.1.0 — Project documentation added (this file). Initial analysis and recommendations seeded.
 - 2025-10-06 v0.1.1 — Landing page repositioned and demo added.
-   - Files changed: `components/landing-page.tsx`, `app/demo/page.tsx`, `app/api/demo/route.ts`, `components/audio/VoiceRecorder.tsx`.
-   - Reason: Update messaging to emphasize AI voice agents and add a mock AI-agent demo for faster iteration.
-   - Notes: `VoiceRecorder` was refactored to use refs and improve lifecycle handling. Demo API returns deterministic mock replies. Demo UI supports multi-turn conversation history.
-
 - 2025-10-07 v0.1.2 — Server: speech API validation and mode flag added.
-   - Files changed: `app/api/speech/route.ts`.
-   - Reason: Harden server endpoint to validate multipart/form-data input, enforce file size and mime-type limits, and provide a `mode` flag (`mock|real`) so demo clients can request mock deterministic responses or opt into real STT when configured.
-   - Notes: Real transcription mode returns 501 unless `OPENAI_API_KEY` or `WHISPER_API_KEY` is provided; size limit set to 5MB. Returns clear JSON error codes for invalid input.
+- 2025-10-07 v0.1.3 — VoiceRecorder robustness improvements
+- 2025-10-07 v0.1.4 — Interactive demo conversation flow
+- 2025-10-07 v0.2.0 — AI Agent core implementation
+- 2025-10-07 v0.2.1 — OpenAI Integration Setup
+- 2025-10-08 v0.2.2 — AI Core: Bug Fixes and Resilience
+- 2025-10-08 v0.2.3 — Refactor: Speech API pronunciation logic
+- 2025-10-08 v0.2.4 — Tests: Added unit tests for pronunciation analysis
+- 2025-10-08 v0.2.5 — Feature: Integrate Whisper STT into Speech API
+- 2025-10-08 v0.2.6 — Feature: Enhanced Pronunciation Feedback
+- 2025-10-08 v0.2.7 — UI: Add Pronunciation Feedback Component
+- 2025-10-08 v0.2.8 — UI: Integrate Feedback Component into Demo
+- 2025-10-08 v0.3.0 — Architecture: Design Curriculum Management System
+- 2025-10-08 v0.3.1 — DB: Add SQL Scripts for Curriculum System
+- 2025-10-08 v0.3.2 — DB & Arch: Add User Progress Tracking System
+- 2025-10-08 v0.3.3 — DB: Consolidated SQL Scripts for Curriculum & Progress
+- 2025-10-08 v0.3.4 — Feature: Add Curricula Discovery Page
+- 2025-10-08 v0.3.5 — DB: Add Sample Curriculum Data
+- 2025-10-08 v0.3.6 — Feature: User Dashboard for Progress Tracking
+- 2025-10-08 v0.3.7 — Feature: Implement "Continue Learning" on Dashboard
+- 2025-10-08 v0.3.8 — Feature: Mark Lessons as Complete
+- 2025-10-08 v0.3.9 — Arch: Connect AI Agent to Curriculum System
+- 2025-10-08 v0.4.0 — Feature: Implement `getNextLesson` Service for AI Agent
+- 2025-10-08 v0.4.1 — Feature: Pass Learning Context to AI Agent
 
 ### Template for future entries
 - YYYY-MM-DD vX.Y.Z — Short description of changes
