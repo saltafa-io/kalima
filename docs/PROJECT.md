@@ -253,7 +253,7 @@ Note: the long-term vision is to use speech transcription and generative models 
   - [ ] Interest/context preferences
   - [ ] Schedule/availability tracking
 
-- [ ] Curriculum Management
+- [✅] Curriculum Management
   - [✅] Structured lesson content (v0.3.0, v0.3.1, v0.3.5)
   - [ ] Dynamic difficulty progression
   - [ ] Personalized learning paths
@@ -401,6 +401,54 @@ Priority 3 (2+ months)
 ## Changelog (versioned entries)
 
 Use this area to record every change to the project with date and version. Add a new entry for each pull request / change you make.
+
+- 2025-10-14 v0.4.15 — Refactor: Convert Curricula Page to Server Component
+  - Files changed: `app/curricula/page.tsx`, `app/curricula/CurriculaClient.tsx` (new)
+  - Reason: To improve initial page load performance by fetching all curricula data on the server.
+  - Notes: The curricula page is now an `async` Server Component. Data fetching for curricula and user enrollments happens on the server. The interactive UI (search, sort, filter) has been moved to a new `CurriculaClient.tsx` component.
+
+- 2025-10-14 v0.4.14 — Feature: Add Level Filter to Curricula Page
+  - Files changed: `app/curricula/page.tsx`
+  - Reason: To allow users to filter the list of available curricula by difficulty level.
+  - Notes: Added "All", "Beginner", "Intermediate", and "Advanced" filter buttons that update the displayed list of courses.
+
+- 2025-10-14 v0.4.13 — Feature: Add Sorting to Curricula Page
+  - Files changed: `app/curricula/page.tsx`
+  - Reason: To improve usability by allowing users to sort the list of available curricula.
+  - Notes: Added a dropdown to sort curricula by name (default) or by level (beginner to advanced).
+
+- 2025-10-14 v0.4.12 — Feature: Add Search to Curricula Page
+  - Files changed: `app/curricula/page.tsx`
+  - Reason: To allow users to easily find specific curricula by searching for keywords in the title or description.
+  - Notes: Added a search input field and client-side filtering logic to the "Available Curricula" page.
+
+- 2025-10-14 v0.4.11 — Refactor: Convert Dashboard to Server Component
+  - Files changed: `app/dashboard/page.tsx`, `app/dashboard/DashboardClient.tsx` (new)
+  - Reason: To improve initial page load performance by fetching all dashboard data on the server.
+  - Notes: The dashboard page is now an `async` Server Component. All data fetching (`get_user_dashboard_data`, `get_user_activity_stats`, etc.) happens on the server. The interactive UI has been moved to a new `DashboardClient.tsx` component, which receives the data as props. This eliminates the client-side loading state.
+
+- 2025-10-14 v0.4.10 — Feature: Add Activity Streak and Recent Lessons to Dashboard
+  - Files changed: `app/dashboard/page.tsx`, Database (new RPC function `get_user_activity_stats`)
+  - Reason: To increase user engagement and provide a more dynamic dashboard experience.
+  - Notes: Added a new section to the dashboard displaying the user's consecutive day learning streak and their three most recently completed lessons. This required a new SQL function to calculate the stats efficiently.
+
+- 2025-10-14 v0.4.9 — Feature: Improve Curricula Page UX
+  - Files changed: `app/curricula/page.tsx`
+  - Reason: To provide clearer feedback to users by showing which curricula they are already enrolled in.
+  - Notes: The "Start Learning" button is now replaced with an "Enrolled (Go to Dashboard)" button for curricula the user has already joined.
+
+- 2025-10-14 v0.4.8 — Content: Added 9 new curricula and lessons
+  - Files changed: N/A (Database content)
+  - Reason: To significantly expand the learning content available to users, covering a wide range of conversational topics.
+  - Notes: Added curricula for "Restaurant & Cafe Conversations", "Daily Routines", "Shopping", "Family", "Travel", "Health", "Work", "Hobbies", and "Food".
+
+- 2025-10-14 v0.4.7 — Fix: Resolved build failure from implicit 'any' type
+  - Files changed: `app/dashboard/page.tsx`
+  - Reason: The build was failing due to a TypeScript error where a parameter in a `.map()` call had an implicit `any` type.
+  - Notes: Explicitly typed the parameter to resolve the error, ensuring a successful production build.
+
+### Unreleased
+- 2025-10-14 v0.4.6 — Feature: Enhanced User Dashboard
 
 ### Unreleased
 - 2025-10-14 v0.4.6 — Feature: Enhanced User Dashboard
