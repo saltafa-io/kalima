@@ -79,7 +79,6 @@ export default function AuthPage() {
             },
           }}
           providers={['google']}
-          redirectTo={`${typeof window !== 'undefined' ? window.location.origin : ''}/auth`}
           onlyThirdPartyProviders
         />
         <button

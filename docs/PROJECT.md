@@ -402,6 +402,11 @@ Priority 3 (2+ months)
 
 Use this area to record every change to the project with date and version. Add a new entry for each pull request / change you make.
 
+- 2025-10-14 v0.4.19 — Fix: Resolve authentication redirect race condition for existing users
+  - Files changed: `app/auth/page.tsx`
+  - Reason: Existing users were getting stuck on the auth page due to a race condition between the Supabase `Auth` component's default redirect and the custom `onAuthStateChange` redirect logic.
+  - Notes: Removed the `redirectTo` prop from the `Auth` component to prevent it from initiating its own navigation, allowing the `onAuthStateChange` handler to reliably control the post-login redirect.
+
 - 2025-10-14 v0.4.18 — Fix: Resolve authentication redirect race condition
   - Files changed: `app/auth/page.tsx`
   - Reason: Existing users were getting stuck on the auth page due to a race condition between `getSession()` and `onAuthStateChange` both trying to redirect simultaneously.
