@@ -31,7 +31,7 @@ export default function AuthPage() {
             setError(`Failed to fetch profile: ${profileError.message}`);
             return;
           }
-          if (!profile.level || !profile.goals?.length) {
+          if (!profile || !profile.level || !profile.goals?.length) {
             router.push('/enrollment');
           } else {
             router.push('/dashboard');
@@ -56,7 +56,7 @@ export default function AuthPage() {
             setError(`Failed to fetch profile: ${profileError.message}`);
             return;
           }
-          if (!profile.level || !profile.goals?.length) {
+          if (!profile || !profile.level || !profile.goals?.length) {
             router.push('/enrollment');
           } else {
             router.push('/dashboard');

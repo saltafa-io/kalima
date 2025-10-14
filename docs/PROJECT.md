@@ -402,6 +402,11 @@ Priority 3 (2+ months)
 
 Use this area to record every change to the project with date and version. Add a new entry for each pull request / change you make.
 
+- 2025-10-14 v0.4.16 — Fix: Handle new user login flow
+  - Files changed: `app/auth/page.tsx`
+  - Reason: New users were getting stuck on the auth page because the code did not handle cases where a user profile does not exist yet.
+  - Notes: Added a null check for the user profile. If no profile exists, the user is correctly redirected to the `/enrollment` page.
+
 - 2025-10-14 v0.4.15 — Refactor: Convert Curricula Page to Server Component
   - Files changed: `app/curricula/page.tsx`, `app/curricula/CurriculaClient.tsx` (new)
   - Reason: To improve initial page load performance by fetching all curricula data on the server.
