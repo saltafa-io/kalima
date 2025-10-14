@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
+import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
@@ -11,38 +12,40 @@ export default function AuthPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      try {
-        if (session) {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('name, email, level, goals')
-            .eq('id', session.user.id)
-            .single();
-          // If the profile doesn't exist, it's a new user. Redirect to enrollment.
-          // The 'PGRST116' code indicates that a single row was requested but not found.
-          if (profileError && profileError.code !== 'PGRST116') {
-            console.error('Profile fetch error:', profileError);
-            setError(`Failed to fetch profile: ${profileError.message}`);
-            return;
-          }
-          if (!profile || !profile.level || !profile.goals?.length) {
-            router.push('/enrollment');
-          } else {
-            router.push('/dashboard');
-          }
-        } else {
-          setError(null); // Clear error on sign-out
+  const handleAuthStateChange = useCallback(async (_event: string, session: Session | null) => {
+    try {
+      if (session) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('name, email, level, goals')
+          .eq('id', session.user.id)
+          .single();
+        // If the profile doesn't exist, it's a new user. Redirect to enrollment.
+        // The 'PGRST116' code indicates that a single row was requested but not found.
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Profile fetch error:', profileError);
+          setError(`Failed to fetch profile: ${profileError.message}`);
+          return;
         }
-      } catch (err) {
-        console.error('Auth state change error:', err);
-        setError('An unexpected error occurred during sign-in. Please try again.');
+        if (!profile || !profile.level || !profile.goals?.length) {
+          router.push('/enrollment');
+        } else {
+          router.push('/dashboard');
+        }
+      } else {
+        setError(null); // Clear error on sign-out
       }
-    });
+    } catch (err) {
+      console.error('Auth state change error:', err);
+      setError('An unexpected error occurred during sign-in. Please try again.');
+    }
+  }, [router]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
 
     return () => subscription.unsubscribe();
-  }, [router]);
+  }, [handleAuthStateChange]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center relative overflow-hidden">

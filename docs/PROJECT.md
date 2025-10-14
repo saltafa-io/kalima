@@ -402,6 +402,16 @@ Priority 3 (2+ months)
 
 Use this area to record every change to the project with date and version. Add a new entry for each pull request / change you make.
 
+- 2025-10-14 v0.4.22 — Fix: Resolve build error from explicit 'any' type
+  - Files changed: `app/auth/page.tsx`
+  - Reason: The build was failing due to a linting error that disallowed the use of the `any` type for the `session` parameter in the `onAuthStateChange` handler.
+  - Notes: Replaced the `any` type with the correct `Session | null` type from `@supabase/supabase-js`.
+
+- 2025-10-14 v0.4.21 — Fix: Resolve auth page redirect loop
+  - Files changed: `app/auth/page.tsx`
+  - Reason: Users were getting stuck on the auth page with a flickering screen due to a redirect loop caused by the `onAuthStateChange` listener re-running on every render.
+  - Notes: Wrapped the `onAuthStateChange` callback in `useCallback` to stabilize the function and prevent the `useEffect` hook from re-subscribing on every render, thus breaking the infinite loop.
+
 - 2025-10-14 v0.4.20 — Fix: Correct OAuth redirect handling
   - Files changed: `app/auth/page.tsx`
   - Reason: Users were getting stuck on the root page after OAuth login because the redirect URL was incorrect. The client-side code to handle the session token was not being executed.
