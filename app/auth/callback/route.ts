@@ -16,13 +16,20 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code');
 
   if (code) {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createRouteHandlerClient({ cookies }, {
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    });
     // Exchange the code for a session
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  // URL to redirect to after sign in process completes
-  const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin;
+  // URL to redirect to after the sign-in process completes.
+  // This should be set in your Vercel environment variables.
+  const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!redirectUrl) {
+    throw new Error('Missing NEXT_PUBLIC_SITE_URL environment variable');
+  }
 
   // After the session is set, redirect the user back to the auth page.
   // The `onAuthStateChange` listener on the auth page will then handle
