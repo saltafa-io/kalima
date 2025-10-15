@@ -8,45 +8,66 @@ import { supabase } from '../../lib/supabase';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 
+/**
+ * AuthPage handles user authentication and redirection.
+ * It displays the Supabase Auth UI for Google sign-in and manages the user's
+ * session state to redirect them to the appropriate page after login.
+ */
 export default function AuthPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * This callback function is triggered whenever the user's authentication state changes
+   * (e.g., on sign-in or sign-out). It's wrapped in `useCallback` for performance
+   * optimization, preventing it from being recreated on every render.
+   */
   const handleAuthStateChange = useCallback(async (_event: string, session: Session | null) => {
-    try {
+    try { // The router object is stable and can be used directly inside the callback
+      // If a session exists, the user has successfully signed in.
       if (session) {
+        // Fetch the user's profile from the 'profiles' table.
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('name, email, level, goals')
           .eq('id', session.user.id)
           .single();
-        // If the profile doesn't exist, it's a new user. Redirect to enrollment.
-        // The 'PGRST116' code indicates that a single row was requested but not found.
+
+        // The 'PGRST116' error code from Supabase indicates that a single row was requested
+        // but not found, which is expected for a new user. We ignore this specific error.
         if (profileError && profileError.code !== 'PGRST116') {
           console.error('Profile fetch error:', profileError);
           setError(`Failed to fetch profile: ${profileError.message}`);
           return;
         }
+
+        // If no profile is found, it's a new user. Redirect to the enrollment page.
         if (!profile) {
           router.push('/enrollment');
         } else {
+          // If a profile exists, redirect the existing user to their dashboard.
           router.push('/dashboard');
         }
       } else {
+        // If there is no session (user signed out), clear any existing errors.
         setError(null); // Clear error on sign-out
       }
     } catch (err) {
+      // Catch any unexpected errors during the process.
       console.error('Auth state change error:', err);
       setError('An unexpected error occurred during sign-in. Please try again.');
     }
-  }, [router]);
+  }, [router]); // We keep router here to be explicit, but the key is its usage inside
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
-
+    // The `onAuthStateChange` listener returns a subscription object.
+    // The cleanup function for this effect will unsubscribe from the listener
+    // to prevent memory leaks when the component unmounts.
     return () => subscription.unsubscribe();
   }, [handleAuthStateChange]);
 
+  // The component renders the main authentication UI.
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center relative overflow-hidden">
       {/* Decorative Arabic text with animations */}
@@ -57,12 +78,14 @@ export default function AuthPage() {
       <div className="max-w-md w-full bg-white/95 backdrop-blur-md rounded-lg shadow-xl p-8 text-center">
         <h1 className="text-4xl font-bold text-gray-800 mb-4 font-arabic">كليمة - تسجيل الدخول</h1>
         <p className="text-gray-600 mb-6">Sign in with Google to start learning Arabic with AI-powered voice feedback.</p>
+        {/* Display any authentication or profile fetch errors to the user. */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
             <p>{error}</p>
             <p className="text-sm mt-2">Please check the console for details or contact support.</p>
           </div>
         )}
+        {/* The Supabase Auth UI component, configured for Google OAuth. */}
         <Auth
           supabaseClient={supabase}
           appearance={{
@@ -82,9 +105,12 @@ export default function AuthPage() {
             },
           }}
           providers={['google']}
-          redirectTo={`${typeof window !== 'undefined' ? window.location.origin : ''}/auth`}
+          // After authenticating with Google, the user is redirected back to this same
+          // page (`/auth`) to allow the `onAuthStateChange` listener to handle the session.
+          redirectTo={typeof window !== 'undefined' ? `${window.location.origin}/auth` : ''}
           onlyThirdPartyProviders
         />
+        {/* A button to allow users to navigate back to the landing page. */}
         <button
           onClick={() => router.push('/')}
           className="mt-6 flex items-center justify-center text-blue-600 hover:text-blue-800 mx-auto"

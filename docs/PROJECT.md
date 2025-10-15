@@ -439,7 +439,17 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
-Use this area to record every change to the project with date and version. Add a new entry for each pull request / change you make.
+Use this area to record every change to the project with date/version and short notes. Add a new entry for each pull request / change you make.
+
+- 2025-10-14 v0.4.24 — Refactor: Add comments to authentication page
+  - Files changed: `app/auth/page.tsx`
+  - Reason: To improve code readability and maintainability by explaining the authentication and redirection logic.
+  - Notes: Added detailed JSDoc-style comments to the `AuthPage` component, its state, effects, and the `handleAuthStateChange` callback.
+
+- 2025-10-14 v0.4.23 — Fix: Simplify login redirect for existing users
+  - Files changed: `app/auth/page.tsx`
+  - Reason: To improve user experience by redirecting existing users directly to the dashboard, even if their profile is incomplete (missing level or goals). This prevents them from being sent back to the enrollment page unnecessarily.
+  - Notes: Changed the redirect condition to only check for the existence of a profile, not its contents.
 
 - 2025-10-14 v0.4.22 — Fix: Resolve build error from explicit 'any' type
   - Files changed: `app/auth/page.tsx`
