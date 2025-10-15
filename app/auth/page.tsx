@@ -27,7 +27,7 @@ export default function AuthPage() {
           setError(`Failed to fetch profile: ${profileError.message}`);
           return;
         }
-        if (!profile || !profile.level || !profile.goals?.length) {
+        if (!profile) {
           router.push('/enrollment');
         } else {
           router.push('/dashboard');

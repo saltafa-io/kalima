@@ -18,6 +18,45 @@ Users sign in with OAuth (Supabase + Google), enroll by providing a profile (nam
 - Hosting: Vercel
 - Key libs: @supabase/supabase-js, @supabase/auth-ui-react, lucide-react
 
+## Project File Structure
+
+This section provides a detailed breakdown of the key files and directories in the Kalima project.
+
+```
+kalima/
+├── app/
+│   ├── (pages)/
+│   │   ├── auth/page.tsx         # Handles user sign-in and OAuth redirection.
+│   │   ├── curricula/
+│   │   │   ├── CurriculaClient.tsx # Client component for browsing/enrolling in curricula.
+│   │   │   └── page.tsx            # Server component to fetch and display curricula.
+│   │   ├── dashboard/
+│   │   │   ├── DashboardClient.tsx # Client component to display user progress.
+│   │   │   └── page.tsx            # Server component to fetch dashboard data.
+│   │   ├── demo/page.tsx           # Interactive demo of the AI agent conversation.
+│   │   ├── enrollment/page.tsx     # Page for new users to create their profile.
+│   │   ├── learn/page.tsx          # The main learning interface for lessons.
+│   │   └── page.tsx                # The application's root landing page.
+│   ├── api/
+│   │   ├── agent/route.ts          # API for AI agent interactions.
+│   │   ├── demo/route.ts           # API for the interactive demo.
+│   │   └── speech/route.ts         # API for speech processing (transcription/analysis).
+│   └── layout.tsx                  # Root layout for the Next.js application.
+├── components/
+│   ├── audio/VoiceRecorder.tsx     # Component for recording user audio.
+│   ├── enrollment/Enrollment.tsx   # The enrollment form component.
+│   ├── feedback/
+│   │   └── PronunciationFeedback.tsx # Displays pronunciation feedback to the user.
+│   └── landing-page.tsx            # The main component for the marketing landing page.
+├── lib/
+│   ├── ai/                         # AI-related logic and integrations (e.g., OpenAI).
+│   ├── analysis/                   # Utility functions for analysis (e.g., scoring).
+│   ├── services/                   # Database services (e.g., curriculumService).
+│   └── supabase.ts                 # Supabase client initialization.
+├── docs/
+│   └── PROJECT.md                  # This project documentation file.
+└── package.json                    # Project dependencies and scripts.
+```
 ## Repository layout (important files)
 
 - `app/` — Next.js app routes and pages
