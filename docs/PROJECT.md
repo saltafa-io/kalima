@@ -22,8 +22,8 @@ Users sign in with OAuth (Supabase + Google), enroll by providing a profile (nam
 
 This section provides a detailed breakdown of the key files and directories in the Kalima project.
 
-```
-kalima/s
+```txt
+kalima/
 ├── app/
 │   ├── (pages)/
 │   │   ├── curricula/
@@ -59,6 +59,7 @@ kalima/s
 │   └── supabase.ts                 # Supabase client initialization.
 ├── docs/
 │   └── PROJECT.md                  # This project documentation file.
+├── tsconfig.json                   # TypeScript configuration with path aliases.
 └── package.json                    # Project dependencies and scripts.
 ```
 ## Repository layout (important files)

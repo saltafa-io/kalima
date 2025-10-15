@@ -54,11 +54,20 @@ export default function UserMenu() {
     router.push('/auth');
   };
 
-  // Don't render the menu if there is no active session
+  // If there is no active session, render a "Sign In" button.
   if (!session) {
-    return null;
+    return (
+      <div className="absolute top-4 right-4 z-50">
+        <Link
+          href="/auth"
+          className="py-2 px-4 bg-white/20 text-white rounded-full hover:bg-white/30 transition-colors"
+        >
+          Sign In
+        </Link>
+      </div>
+    );
   }
-
+  // Otherwise, render the user menu for the logged-in user.
   return (
     <div className="absolute top-4 right-4 z-50" ref={menuRef}>
       <button
