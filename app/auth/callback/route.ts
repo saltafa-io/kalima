@@ -21,9 +21,12 @@ export async function GET(request: NextRequest) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
+  // URL to redirect to after sign in process completes
+  const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin;
+
   // After the session is set, redirect the user back to the auth page.
   // The `onAuthStateChange` listener on the auth page will then handle
   // redirecting the user to the correct page (dashboard or enrollment).
-  const redirectUrl = new URL('/auth', request.url);
-  return NextResponse.redirect(redirectUrl);
+  const finalRedirectUrl = new URL('/auth', redirectUrl);
+  return NextResponse.redirect(finalRedirectUrl);
 }

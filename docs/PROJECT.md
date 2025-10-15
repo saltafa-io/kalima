@@ -311,7 +311,7 @@ Note: the long-term vision is to use speech transcription and generative models 
 - [ ] Authentication & Security
   - [✅] OAuth with Google (v0.1.0)
   - [✅] Basic user profiles
-  - [ ] PKCE flow implementation
+  - [✅] PKCE flow implementation
   - [ ] Session management
   - [ ] Rate limiting & abuse prevention
 
@@ -441,6 +441,15 @@ Priority 3 (2+ months)
 ## Changelog (versioned entries)
 
 Use this area to record every change to the project with date/version and short notes. Add a new entry for each pull request / change you make.
+
+- 2025-10-14 v0.4.28 — Fix: Correct post-authentication redirect URL
+  - Files changed: `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: After authentication, users were being redirected to `localhost:3000` instead of the production Vercel URL.
+  - Notes: Introduced a `NEXT_PUBLIC_SITE_URL` environment variable. The `/auth/callback` route now uses this variable to construct the final redirect URL, ensuring it works correctly in all environments.
+
+- 2025-10-14 v0.4.27 — Fix: Correctly configure PKCE auth flow
+  - Files changed: `app/auth/page.tsx`, `lib/supabase.ts`
+  - Reason: To fix an auth flow issue where the client was receiving an access token in the URL fragment instead of a code. The `flowType` prop was invalid on the `<Auth>` component.
 
 - 2025-10-14 v0.4.24 — Refactor: Add comments to authentication page
   - Files changed: `app/auth/page.tsx`
