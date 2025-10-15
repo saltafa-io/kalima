@@ -23,17 +23,18 @@ Users sign in with OAuth (Supabase + Google), enroll by providing a profile (nam
 This section provides a detailed breakdown of the key files and directories in the Kalima project.
 
 ```
-kalima/
+kalima/s
 ├── app/
 │   ├── (pages)/
-│   │   ├── auth/callback/route.ts  # Server-side route for OAuth code exchange.
-│   │   ├── auth/page.tsx         # Handles user sign-in and OAuth redirection.
 │   │   ├── curricula/
 │   │   │   ├── CurriculaClient.tsx # Client component for browsing/enrolling in curricula.
 │   │   │   └── page.tsx            # Server component to fetch and display curricula.
 │   │   ├── dashboard/
-│   │   │   ├── DashboardClient.tsx # Client component to display user progress.
-│   │   │   └── page.tsx            # Server component to fetch dashboard data.
+│   │   │   ├── DashboardClient.tsx # Client component for dashboard UI.
+│   │   │   └── page.tsx            # Server component for fetching dashboard data.
+│   │   ├── auth/callback/route.ts  # Server-side route for OAuth code exchange.
+│   │   ├── auth/page.tsx         # Handles user sign-in and session state.
+│   │   ├── settings/page.tsx     # Page for user profile and settings management.
 │   │   ├── demo/page.tsx           # Interactive demo of the AI agent conversation.
 │   │   ├── enrollment/page.tsx     # Page for new users to create their profile.
 │   │   ├── learn/page.tsx          # The main learning interface for lessons.
@@ -44,6 +45,8 @@ kalima/
 │   │   └── speech/route.ts         # API for speech processing (transcription/analysis).
 │   └── layout.tsx                  # Root layout for the Next.js application.
 ├── components/
+│   ├── auth/                     # Authentication-related components.
+│   │   └── UserMenu.tsx          # Client component for user dropdown menu.
 │   ├── audio/VoiceRecorder.tsx     # Component for recording user audio.
 │   ├── enrollment/Enrollment.tsx   # The enrollment form component.
 │   ├── feedback/
@@ -62,7 +65,7 @@ kalima/
 
 - `app/` — Next.js app routes and pages
   - `app/page.tsx` — root landing page (renders `components/landing-page.tsx`)
-  - `app/layout.tsx` — root layout
+  - `app/layout.tsx` — root layout, now includes the `UserMenu` component for authenticated users.
   - `app/auth/page.tsx` — Supabase Auth UI page and auth state handler
   - `app/enrollment/page.tsx` — enrollment route (protects route and passes userId to component)
   - `app/demo/page.tsx` — interactive demo with mock AI agent conversation
@@ -73,6 +76,7 @@ kalima/
   - `app/api/demo/route.ts` — demo API with deterministic responses
   - `app/api/agent/route.ts` — main API for interacting with the AI agent
 - `components/` — Reusable UI components
+  - `components/auth/UserMenu.tsx` — A new client component that provides a dropdown menu for logged-in users to navigate to settings or log out.
   - `components/landing-page.tsx` — landing page with updated messaging
   - `components/audio/VoiceRecorder.tsx` — robust speech recorder with refs
   - `components/enrollment/Enrollment.tsx` — enrollment form and logic
@@ -440,7 +444,24 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
-Use this area to record every change to the project with date/version and short notes. Add a new entry for each pull request / change you make.
+- 2025-10-14 v0.4.30 — Feature: Add User Menu
+  - Files changed: `components/auth/UserMenu.tsx` (new), `app/layout.tsx`, `app/settings/page.tsx` (new), `docs/PROJECT.md`
+  - Reason: To provide logged-in users with a consistent navigation menu for accessing their profile, settings, and logging out.
+  - Notes: Created a new `UserMenu` client component that fetches the user session and displays a dropdown menu. Added it to the root layout to appear on all pages.
+
+- 2025-10-14 v0.4.30 — Feature: Add User Menu
+  - Files changed: `components/auth/UserMenu.tsx` (new), `app/layout.tsx`, `app/settings/page.tsx` (new), `docs/PROJECT.md`
+  - Reason: To provide logged-in users with a consistent navigation menu for accessing their profile, settings, and logging out.
+  - Notes: Created a new `UserMenu` client component that fetches the user session and displays a dropdown menu. Added it to the root layout to appear on all pages.
+
+- 2025-10-14 v0.4.29 — Fix: Resolve authentication redirect loop
+  - Files changed: `app/auth/callback/route.ts`, `app/auth/page.tsx`, `lib/supabase.ts`, `docs/PROJECT.md`
+  - Reason: Users were being redirected to `localhost:3000` or getting stuck in a redirect loop after logging in due to a combination of incorrect redirect URLs and browser bounce tracking mitigation.
+  - Notes:
+    - Updated `lib/supabase.ts` to dynamically determine the `siteUrl`.
+    - Reinstated the server-side `/auth/callback/route.ts` to handle the OAuth code exchange.
+    - Updated `app/auth/page.tsx` to use the server-side callback.
+    - The final fix involved redirecting from `/auth/callback` back to `/auth`, allowing the robust client-side `onAuthStateChange` handler to manage the final redirect to `/dashboard` or `/enrollment`, which resolves the bounce tracking issue.
 
 - 2025-10-14 v0.4.28 — Fix: Correct post-authentication redirect URL
   - Files changed: `app/auth/callback/route.ts`, `docs/PROJECT.md`
@@ -448,105 +469,101 @@ Use this area to record every change to the project with date/version and short 
   - Notes: Introduced a `NEXT_PUBLIC_SITE_URL` environment variable. The `/auth/callback` route now uses this variable to construct the final redirect URL, ensuring it works correctly in all environments.
 
 - 2025-10-14 v0.4.27 — Fix: Correctly configure PKCE auth flow
-  - Files changed: `app/auth/page.tsx`, `lib/supabase.ts`
+  - Files changed: `app/auth/page.tsx`, `lib/supabase.ts`, `docs/PROJECT.md`
   - Reason: To fix an auth flow issue where the client was receiving an access token in the URL fragment instead of a code. The `flowType` prop was invalid on the `<Auth>` component.
 
 - 2025-10-14 v0.4.24 — Refactor: Add comments to authentication page
-  - Files changed: `app/auth/page.tsx`
+  - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
   - Reason: To improve code readability and maintainability by explaining the authentication and redirection logic.
   - Notes: Added detailed JSDoc-style comments to the `AuthPage` component, its state, effects, and the `handleAuthStateChange` callback.
 
 - 2025-10-14 v0.4.23 — Fix: Simplify login redirect for existing users
-  - Files changed: `app/auth/page.tsx`
+  - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
   - Reason: To improve user experience by redirecting existing users directly to the dashboard, even if their profile is incomplete (missing level or goals). This prevents them from being sent back to the enrollment page unnecessarily.
   - Notes: Changed the redirect condition to only check for the existence of a profile, not its contents.
 
 - 2025-10-14 v0.4.22 — Fix: Resolve build error from explicit 'any' type
-  - Files changed: `app/auth/page.tsx`
+  - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
   - Reason: The build was failing due to a linting error that disallowed the use of the `any` type for the `session` parameter in the `onAuthStateChange` handler.
   - Notes: Replaced the `any` type with the correct `Session | null` type from `@supabase/supabase-js`.
 
 - 2025-10-14 v0.4.21 — Fix: Resolve auth page redirect loop
-  - Files changed: `app/auth/page.tsx`
+  - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
   - Reason: Users were getting stuck on the auth page with a flickering screen due to a redirect loop caused by the `onAuthStateChange` listener re-running on every render.
   - Notes: Wrapped the `onAuthStateChange` callback in `useCallback` to stabilize the function and prevent the `useEffect` hook from re-subscribing on every render, thus breaking the infinite loop.
 
 - 2025-10-14 v0.4.20 — Fix: Correct OAuth redirect handling
-  - Files changed: `app/auth/page.tsx`
+  - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
   - Reason: Users were getting stuck on the root page after OAuth login because the redirect URL was incorrect. The client-side code to handle the session token was not being executed.
   - Notes: Re-added the `redirectTo` prop to the Supabase `Auth` component, ensuring users are always redirected back to the `/auth` page to complete the sign-in flow.
 
 - 2025-10-14 v0.4.19 — Fix: Resolve authentication redirect race condition for existing users
-  - Files changed: `app/auth/page.tsx`
+  - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
   - Reason: Existing users were getting stuck on the auth page due to a race condition between the Supabase `Auth` component's default redirect and the custom `onAuthStateChange` redirect logic.
   - Notes: Removed the `redirectTo` prop from the `Auth` component to prevent it from initiating its own navigation, allowing the `onAuthStateChange` handler to reliably control the post-login redirect.
 
 - 2025-10-14 v0.4.18 — Fix: Resolve authentication redirect race condition
-  - Files changed: `app/auth/page.tsx`
+  - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
   - Reason: Existing users were getting stuck on the auth page due to a race condition between `getSession()` and `onAuthStateChange` both trying to redirect simultaneously.
   - Notes: Removed the redundant `checkSession` call inside `useEffect`. The `onAuthStateChange` listener is sufficient to handle both initial session checks and subsequent auth events, eliminating the race condition.
 
 - 2025-10-14 v0.4.17 — Fix: Improve new user login flow
-  - Files changed: `app/auth/page.tsx`
+  - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
   - Reason: The auth page was treating a "profile not found" error as a fatal error, preventing new users from being redirected to the enrollment page.
   - Notes: The logic now correctly identifies the Supabase error code for a missing profile (`PGRST116`) and redirects new users to `/enrollment` as intended.
 
 - 2025-10-14 v0.4.16 — Fix: Handle new user login flow
-  - Files changed: `app/auth/page.tsx`
+  - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
   - Reason: New users were getting stuck on the auth page because the code did not handle cases where a user profile does not exist yet.
   - Notes: Added a null check for the user profile. If no profile exists, the user is correctly redirected to the `/enrollment` page.
 
 - 2025-10-14 v0.4.15 — Refactor: Convert Curricula Page to Server Component
-  - Files changed: `app/curricula/page.tsx`, `app/curricula/CurriculaClient.tsx` (new)
+  - Files changed: `app/curricula/page.tsx`, `app/curricula/CurriculaClient.tsx` (new), `docs/PROJECT.md`
   - Reason: To improve initial page load performance by fetching all curricula data on the server.
   - Notes: The curricula page is now an `async` Server Component. Data fetching for curricula and user enrollments happens on the server. The interactive UI (search, sort, filter) has been moved to a new `CurriculaClient.tsx` component.
 
 - 2025-10-14 v0.4.14 — Feature: Add Level Filter to Curricula Page
-  - Files changed: `app/curricula/page.tsx`
+  - Files changed: `app/curricula/page.tsx`, `docs/PROJECT.md`
   - Reason: To allow users to filter the list of available curricula by difficulty level.
   - Notes: Added "All", "Beginner", "Intermediate", and "Advanced" filter buttons that update the displayed list of courses.
 
 - 2025-10-14 v0.4.13 — Feature: Add Sorting to Curricula Page
-  - Files changed: `app/curricula/page.tsx`
+  - Files changed: `app/curricula/page.tsx`, `docs/PROJECT.md`
   - Reason: To improve usability by allowing users to sort the list of available curricula.
   - Notes: Added a dropdown to sort curricula by name (default) or by level (beginner to advanced).
 
 - 2025-10-14 v0.4.12 — Feature: Add Search to Curricula Page
-  - Files changed: `app/curricula/page.tsx`
+  - Files changed: `app/curricula/page.tsx`, `docs/PROJECT.md`
   - Reason: To allow users to easily find specific curricula by searching for keywords in the title or description.
   - Notes: Added a search input field and client-side filtering logic to the "Available Curricula" page.
 
 - 2025-10-14 v0.4.11 — Refactor: Convert Dashboard to Server Component
-  - Files changed: `app/dashboard/page.tsx`, `app/dashboard/DashboardClient.tsx` (new)
+  - Files changed: `app/dashboard/page.tsx`, `app/dashboard/DashboardClient.tsx` (new), `docs/PROJECT.md`
   - Reason: To improve initial page load performance by fetching all dashboard data on the server.
   - Notes: The dashboard page is now an `async` Server Component. All data fetching (`get_user_dashboard_data`, `get_user_activity_stats`, etc.) happens on the server. The interactive UI has been moved to a new `DashboardClient.tsx` component, which receives the data as props. This eliminates the client-side loading state.
 
 - 2025-10-14 v0.4.10 — Feature: Add Activity Streak and Recent Lessons to Dashboard
-  - Files changed: `app/dashboard/page.tsx`, Database (new RPC function `get_user_activity_stats`)
+  - Files changed: `app/dashboard/page.tsx`, Database (new RPC function `get_user_activity_stats`), `docs/PROJECT.md`
   - Reason: To increase user engagement and provide a more dynamic dashboard experience.
   - Notes: Added a new section to the dashboard displaying the user's consecutive day learning streak and their three most recently completed lessons. This required a new SQL function to calculate the stats efficiently.
 
 - 2025-10-14 v0.4.9 — Feature: Improve Curricula Page UX
-  - Files changed: `app/curricula/page.tsx`
+  - Files changed: `app/curricula/page.tsx`, `docs/PROJECT.md`
   - Reason: To provide clearer feedback to users by showing which curricula they are already enrolled in.
   - Notes: The "Start Learning" button is now replaced with an "Enrolled (Go to Dashboard)" button for curricula the user has already joined.
 
 - 2025-10-14 v0.4.8 — Content: Added 9 new curricula and lessons
-  - Files changed: N/A (Database content)
+  - Files changed: N/A (Database content), `docs/PROJECT.md`
   - Reason: To significantly expand the learning content available to users, covering a wide range of conversational topics.
   - Notes: Added curricula for "Restaurant & Cafe Conversations", "Daily Routines", "Shopping", "Family", "Travel", "Health", "Work", "Hobbies", and "Food".
 
 - 2025-10-14 v0.4.7 — Fix: Resolved build failure from implicit 'any' type
-  - Files changed: `app/dashboard/page.tsx`
+  - Files changed: `app/dashboard/page.tsx`, `docs/PROJECT.md`
   - Reason: The build was failing due to a TypeScript error where a parameter in a `.map()` call had an implicit `any` type.
   - Notes: Explicitly typed the parameter to resolve the error, ensuring a successful production build.
 
-### Unreleased
 - 2025-10-14 v0.4.6 — Feature: Enhanced User Dashboard
-
-### Unreleased
-- 2025-10-14 v0.4.6 — Feature: Enhanced User Dashboard
-  - Files changed: `app/dashboard/page.tsx`
+  - Files changed: `app/dashboard/page.tsx`, `docs/PROJECT.md`
   - Reason: To improve the user experience by making the dashboard more professional, personalized, and intuitive.
   - Notes:
     - Added a personalized welcome message for the user.
@@ -556,23 +573,22 @@ Use this area to record every change to the project with date/version and short 
     - Improved overall layout with a main header and a clear call-to-action to browse new curricula.
 
 - 2025-10-14 v0.4.5 — Fix: Corrected post-authentication redirect flow
-  - Files changed: `app/auth/page.tsx`
+  - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
   - Reason: Users with existing profiles were being incorrectly redirected to `/learn` without context, causing an error.
   - Notes: The redirect is now correctly pointed to `/dashboard`, which is the intended landing page for enrolled users.
 
 - 2025-10-14 v0.4.4 — Refactor: Implemented lazy initialization for OpenAI client
-  - Files changed: `lib/ai/openai.ts`, `app/dashboard/page.tsx`
+  - Files changed: `lib/ai/openai.ts`, `app/dashboard/page.tsx`, `docs/PROJECT.md`
   - Reason: To fix a build-time error where `OPENAI_API_KEY` was required during `next build`.
   - Notes: The OpenAI client is now initialized only when an API call is made, not at module load time. This is a more robust pattern.
 
 - 2025-10-14 v0.4.3 — Fix: Resolved build failure from syntax error
-  - Files changed: `lib/ai/agent.ts`
+  - Files changed: `lib/ai/agent.ts`, `docs/PROJECT.md`
   - Reason: A duplicated code block at the end of the file was causing a syntax error.
   - Notes: Removed the duplicated code to allow the build to succeed.
 
-### Unreleased
 - 2025-10-14 v0.4.2 — Refactor: Improve Type Safety and Error Handling in AI Agent and API
-  - Files changed: `lib/ai/agent.ts`, `app/api/agent/route.ts`
+  - Files changed: `lib/ai/agent.ts`, `app/api/agent/route.ts`, `docs/PROJECT.md`
   - Reason: To improve the robustness and reliability of the AI agent and its corresponding API route.
   - Notes:
     - Fixed several bugs in `agent.ts` related to incorrect property access and asynchronous operations.
@@ -610,7 +626,9 @@ Use this area to record every change to the project with date/version and short 
 - YYYY-MM-DD vX.Y.Z — Short description of changes
   - Files changed: list
   - Reason: why
-  - Notes: any follow-ups
+  - Notes: any follow-ups, implementation details, or gotchas.
+
+Use this area to record every change to the project with date/version and short notes. Add a new entry for each pull request / change you make.
 
 ## How to contribute and use this doc
 
