@@ -69,7 +69,7 @@ export default function AuthPage() {
   // Construct the redirect URL dynamically on the client side.
   // This is the most robust way to ensure the correct origin is used,
   // avoiding issues with build-time environment variables.
-  const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : '';
+  const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/auth` : '';
 
   // The component renders the main authentication UI.
   return (

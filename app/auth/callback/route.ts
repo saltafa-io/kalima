@@ -44,13 +44,16 @@ export async function GET(request: NextRequest) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  // 5. ✅ **CRITICAL FIX:** Redirect back to the `/auth` page.
-  // After the session cookie is set by `exchangeCodeForSession`, we redirect
-  // back to the client-side `/auth` page. The `onAuthStateChange` listener
-  // there will then detect the new session and correctly route the user to
-  // either `/dashboard` or `/enrollment`. This avoids the bounce-tracking issue.
-  const finalRedirectUrl = new URL('/auth', siteUrl);
+  // 5. ✅ **CRITICAL FIX:** Redirect the user directly to their final destination.
+  // Instead of redirecting back to the `/auth` page (which can cause client-side
+  // race conditions and bounce-tracking issues), we send the user straight to the `/dashboard`.
+  // This is a more robust and faster approach because the server already knows
+  // the user is authenticated at this point. New users will be handled by logic on the dashboard.
+  const finalRedirectUrl = new URL('/dashboard', siteUrl);
 
-  // 6. Return a response that tells the user's browser to navigate to the dashboard.
+  // 6. Return a response that tells the user's browser to navigate to the final destination.
   return NextResponse.redirect(finalRedirectUrl);
 }
+
+// This export is needed to ensure the file is treated as a module by TypeScript.
+export {};
