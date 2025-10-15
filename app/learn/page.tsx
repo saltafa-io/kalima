@@ -1,12 +1,12 @@
 'use client';
 
 import React, { Suspense, useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
-import VoiceRecorder from '../../components/audio/VoiceRecorder';
+import VoiceRecorder from '@/components/audio/VoiceRecorder';
 import { ArrowLeft, ArrowRight, Check, LogOut } from 'lucide-react';
-import { AgentResponse } from '../../types/agent';
-import PronunciationFeedback from '../../components/feedback/PronunciationFeedback';
+import { AgentResponse } from '@/types/agent';
+import PronunciationFeedback from '@/components/feedback/PronunciationFeedback';
 
 type ConversationTurn = {
   user: { text: string };
@@ -73,7 +73,9 @@ function LearnContent() {
       }
     };
 
-    checkSession();
+    checkSession().catch(err => {
+      console.error('Failed to check session:', err);
+    });
   }, [router, searchParams]);
 
   const handleRecordingComplete = (blob: Blob) => {

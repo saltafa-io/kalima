@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import Enrollment from '../../components/enrollment/Enrollment';
+import Enrollment from '@/components/enrollment/Enrollment';
 
 export default function EnrollmentPage() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function EnrollmentPage() {
           return;
         }
         if (!session) {
-          console.warn('No session found, redirecting to auth');
+          // No need to warn if we are redirecting, this is expected if the user is not logged in.
           router.push('/auth');
           return;
         }
@@ -35,7 +35,9 @@ export default function EnrollmentPage() {
       }
     };
 
-    checkSession();
+    checkSession().catch(err => {
+      console.error('Failed to check session:', err);
+    });
   }, [router]);
 
   if (loading) {
@@ -76,7 +78,7 @@ export default function EnrollmentPage() {
       <div className="absolute bottom-20 left-20 text-white/10 text-6xl font-arabic animate-bounce delay-2000">ابدأ</div>
       <div className="max-w-md w-full bg-white/95 backdrop-blur-md rounded-lg shadow-xl p-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-4 font-arabic text-center">Kaleema - Enrollment</h1>
-        <Enrollment userId={userId!} />
+        {userId && <Enrollment userId={userId} />}
       </div>
     </main>
   );

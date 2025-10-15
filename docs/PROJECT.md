@@ -444,6 +444,21 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-14 v0.4.32 — Fix: Resolve build error by adding path aliases
+  - Files changed: `tsconfig.json` (new), `app/auth/page.tsx`, `app/enrollment/page.tsx`, `app/learn/page.tsx`, `components/auth/UserMenu.tsx`, `components/enrollment/Enrollment.tsx`
+  - Reason: To fix a `next build` failure (`Cannot find module`) by introducing a `tsconfig.json` with a path alias (`@/*`). This makes imports more robust and readable.
+  - Notes:
+    - Created `tsconfig.json` to configure TypeScript and define a `@/*` path alias pointing to the project root.
+    - Updated all relative `../../` imports to use the new `@/` alias, resolving the module resolution error during the build process.
+
+- 2025-10-14 v0.4.31 — Fix: Improve async handling and type safety
+  - Files changed: `app/enrollment/page.tsx`, `app/learn/page.tsx`, `components/auth/UserMenu.tsx`, `components/enrollment/Enrollment.tsx`
+  - Reason: To prevent unhandled promise rejections and improve code robustness by correctly handling asynchronous operations in React effects and fixing minor type errors.
+  - Notes:
+    - Added `.catch()` handlers to floating promises in `useEffect` hooks across several components to prevent potential crashes from unhandled rejections.
+    - Corrected the type for the `_event` parameter in `onAuthStateChange` to `AuthChangeEvent` in `UserMenu.tsx`.
+    - Replaced a non-null assertion (`!`) with safer conditional rendering in `enrollment/page.tsx`.
+
 - 2025-10-14 v0.4.30 — Feature: Add User Menu
   - Files changed: `components/auth/UserMenu.tsx` (new), `app/layout.tsx`, `app/settings/page.tsx` (new), `docs/PROJECT.md`
   - Reason: To provide logged-in users with a consistent navigation menu for accessing their profile, settings, and logging out.

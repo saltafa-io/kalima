@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, FormEvent } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import VoiceRecorder from '../audio/VoiceRecorder';
+import VoiceRecorder from '@/components/audio/VoiceRecorder';
 
 interface EnrollmentProps {
   userId: string;
@@ -48,7 +48,9 @@ export default function Enrollment({ userId }: EnrollmentProps) {
       }
     };
 
-    fetchProfile();
+    fetchProfile().catch(err => {
+      console.error('Failed to fetch profile on mount:', err);
+    });
   }, [userId]);
 
   const handleVoiceInput = (result: string) => {

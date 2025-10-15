@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import type { Session } from '@supabase/supabase-js';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 
@@ -22,7 +22,7 @@ export default function AuthPage() {
    * optimization, preventing it from being recreated on every render.
    */
   const handleAuthStateChange = useCallback(async (_event: string, session: Session | null) => {
-    try { // The router object is stable and can be used directly inside the callback
+    try {
       // If a session exists, the user has successfully signed in.
       if (session) {
         // Fetch the user's profile from the 'profiles' table.
@@ -56,7 +56,7 @@ export default function AuthPage() {
       console.error('Auth state change error:', err);
       setError('An unexpected error occurred during sign-in. Please try again.');
     }
-  }, [router]); // We keep router here to be explicit, but the key is its usage inside
+  }, [router]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);

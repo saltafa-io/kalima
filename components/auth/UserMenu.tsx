@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { User, LogOut, Settings, UserCog } from 'lucide-react';
-import { supabase } from './lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import type { Session } from '@supabase/supabase-js';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 /**
  * UserMenu provides a user icon in the top-right corner with a dropdown
@@ -25,9 +25,11 @@ export default function UserMenu() {
       setSession(session);
     };
 
-    getSession();
+    getSession().catch(err =>
+      console.error('Failed to fetch session on mount:', err),
+    );
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session) => {
       setSession(session);
     });
 

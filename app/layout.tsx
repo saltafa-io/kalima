@@ -1,6 +1,7 @@
 // app/layout.tsx
 
 import './globals.css';
+import UserMenu from '@/components/auth/UserMenu';
 
 export default function RootLayout({
   children,
@@ -9,8 +10,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        {children}
+      <body className="relative">
+        <UserMenu />
+        <main>{children}</main>
       </body>
     </html>
   );
