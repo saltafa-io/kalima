@@ -107,7 +107,8 @@ export default function AuthPage() {
           providers={['google']}
           // After authenticating with Google, the user is redirected back to this same
           // page (`/auth`) to allow the `onAuthStateChange` listener to handle the session.
-          redirectTo={typeof window !== 'undefined' ? `${window.location.origin}/auth` : ''}
+          // This is now a server-side flow.
+          redirectTo={typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : ''}
           onlyThirdPartyProviders
         />
         {/* A button to allow users to navigate back to the landing page. */}

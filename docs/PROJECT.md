@@ -26,6 +26,7 @@ This section provides a detailed breakdown of the key files and directories in t
 kalima/
 ├── app/
 │   ├── (pages)/
+│   │   ├── auth/callback/route.ts  # Server-side route for OAuth code exchange.
 │   │   ├── auth/page.tsx         # Handles user sign-in and OAuth redirection.
 │   │   ├── curricula/
 │   │   │   ├── CurriculaClient.tsx # Client component for browsing/enrolling in curricula.
