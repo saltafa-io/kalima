@@ -445,6 +445,14 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-18 v0.6.7 — Fix: Resolve final authentication redirect loop
+  - Files changed: `app/auth/callback/route.ts`, `lib/supabase/server.ts`, `docs/PROJECT.md`
+  - Reason: Users were stuck in a redirect loop after logging in. The server-side check on the dashboard was failing before the session was fully available, causing a redirect back to the auth page.
+  - Notes:
+    - Updated `app/auth/callback/route.ts` to explicitly handle the code-for-session exchange using the server client and then redirect directly to the dashboard. This is the most robust pattern for the PKCE flow.
+    - Restored the `set` and `remove` methods to `lib/supabase/server.ts` to ensure the server client and middleware can correctly manage session cookies.
+    - This change eliminates the race condition between the client-side navigation and the server-side session check, ensuring a stable login experience.
+
 - 2025-10-18 v0.6.6 — Fix: Correct Supabase server client cookie handling
   - Files changed: `lib/supabase/server.ts`, `docs/PROJECT.md`
   - Reason: A previous change incorrectly removed the `set` and `remove` methods from the server client's cookie object, causing an error because the `createServerClient` function requires them.
