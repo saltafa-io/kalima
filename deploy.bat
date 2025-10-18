@@ -6,14 +6,29 @@ echo  Kalima Build and Deploy Script
 echo ==================================
 echo.
 
-REM Prompt for version and commit message
-set /p version="Enter version (e.g., v0.5.0): "
-if not defined version (
-    echo Version is required. Aborting.
-    goto :eof
+REM --- Auto-increment version ---
+echo --- Determining new version...
+set "last_version="
+for /f "tokens=3" %%a in ('findstr /R /C:"^- [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] v[0-9]*\.[0-9]*\.[0-9]*" "docs\PROJECT.md"') do (
+    set "last_version=%%a"
+    goto :found_version
 )
 
-set /p message="Enter commit message: "
+:found_version
+if not defined last_version (
+    echo Could not find previous version in docs/PROJECT.md. Using v0.1.0.
+    set "version=v0.1.0"
+) else (
+    for /f "tokens=1,2,3 delims=.v" %%a in ("%last_version%") do (
+        set /a "patch=%%c + 1"
+        call set "version=v%%a.%%b.%%patch%%"
+    )
+)
+echo New version: %version%
+echo.
+
+REM Prompt for commit message
+set /p message="Enter commit message description: "
 if not defined message (
     echo Commit message is required. Aborting.
     goto :eof
@@ -61,5 +76,4 @@ git commit -m "%commit_message%"
 git push
 
 echo.
-echo --- Done! ---
-pause
+echo --- Deployment script finished. ---

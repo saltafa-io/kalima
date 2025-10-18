@@ -445,6 +445,34 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-18 v0.7.4 — Fix: Resolve server error due to missing import
+  - Files changed: `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: A previous change to remove a duplicate import incorrectly removed the `NextResponse` import, causing a server-side reference error in the auth callback route.
+  - Notes:
+    - Restored the `NextResponse` import in `app/auth/callback/route.ts`.
+
+- 2025-10-18 v0.7.3 — Fix: Remove duplicate type import
+  - Files changed: `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: The `NextRequest` type was being imported twice in the auth callback route, which is redundant.
+  - Notes:
+    - Removed the duplicate `import type { NextRequest } from 'next/server';` line to clean up the code and prevent potential build issues.
+
+- 2025-10-18 v0.7.2 — Fix: Resolve server exception after OAuth callback
+  - Files changed: `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: A server-side exception was still occurring on the `/dashboard` page after a user logged in. This was due to a race condition where the redirect from the auth callback happened before the browser received the session cookies set by the middleware.
+  - Notes:
+    - Updated `app/auth/callback/route.ts` to explicitly handle the code-for-session exchange using the server client.
+    - This ensures the session cookies are set on the same response that issues the redirect to the dashboard, eliminating the race condition.
+    - The middleware remains crucial for maintaining the session on all subsequent server-side requests.
+
+- 2025-10-18 v0.7.1 — Chore: Automate versioning in deployment script
+  - Files changed: `deploy.bat`, `docs/PROJECT.md`
+  - Reason: To streamline the deployment process and reduce manual input.
+  - Notes:
+    - Modified `deploy.bat` to automatically read the latest version from `docs/PROJECT.md`, increment the patch number, and use it for the commit.
+    - Removed the final `pause` command to allow the script to run non-interactively.
+    - Simplified the commit message prompt to only ask for a description.
+
 - 2025-10-18 v0.7.0 — Fix: Resolve Server Component render error on dashboard
   - Files changed: `lib/supabase/server.ts`, `docs/PROJECT.md`
   - Reason: A server-side exception was occurring on the dashboard page after login. This was caused by an incomplete implementation of the cookie store in the server-side Supabase client.

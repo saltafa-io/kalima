@@ -1,18 +1,25 @@
 // File: app/auth/callback/route.ts
 
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
 /**
- * This server-side route is the designated redirect URL for the OAuth provider.
- * After a user signs in, they are sent here. The `@supabase/ssr` middleware
- * has already exchanged the `code` for a session cookie by the time this
- * route is hit.
+ * This route handles the OAuth callback from Supabase.
+ * It is responsible for exchanging the authorization `code` for a session
+ * and then redirecting the user to their destination (the dashboard).
  *
- * This route's only job is to redirect the user to their intended destination
- * after a successful login.
+ * The middleware is still essential for keeping the session fresh on subsequent
+ * requests, but this callback must handle the initial session creation.
  */
 export async function GET(request: NextRequest) {
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get('code');
+
+  if (code) {
+    const supabase = createClient();
+    await supabase.auth.exchangeCodeForSession(code);
+  }
+
   // URL to redirect to after sign in process completes
-  return NextResponse.redirect(new URL('/dashboard', request.url));
+  return NextResponse.redirect(`${origin}/dashboard`);
 }
