@@ -1,11 +1,10 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { getNextLesson } from '../../lib/services/curriculumService';
 import DashboardClient, { DashboardData, RecentLesson } from './DashboardClient';
 
 export default async function DashboardPage() {
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {

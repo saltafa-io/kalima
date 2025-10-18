@@ -445,6 +445,23 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-14 v0.6.1 — Fix: Resolve build failure by installing `@supabase/ssr`
+  - Files changed: `app/dashboard/page.tsx`, `docs/PROJECT.md`
+  - Reason: The build was failing with a "Module not found" error because the `@supabase/ssr` package, a new dependency for the server-side auth client, was not installed.
+  - Notes:
+    - Instructed to run `npm install @supabase/ssr` to add the missing dependency.
+    - Updated `app/dashboard/page.tsx` to use the new `createClient()` from `@/lib/supabase/server` instead of the legacy `@supabase/auth-helpers-nextjs`, ensuring consistent authentication logic.
+    - This change completes the architectural migration to the recommended Supabase client setup for the Next.js App Router.
+
+- 2025-10-14 v0.6.0 — Arch: Implement Server-Side Supabase Client
+  - Files changed: `lib/supabase/client.ts` (new), `lib/supabase/server.ts` (new), `lib/supabase.ts` (deleted), `app/auth/page.tsx`, `components/auth/UserMenu.tsx`, `app/learn/page.tsx`, `docs/PROJECT.md`, and all server components (e.g., `app/dashboard/page.tsx`).
+  - Reason: To fix a critical authentication redirect loop caused by Server Components being unable to access the user's session.
+  - Notes:
+    - The redirect loop occurred because Server Components were using a client-side Supabase instance, which always returned `null` for the session on the server, triggering a redirect to `/auth`.
+    - Created two separate Supabase clients: `lib/supabase/client.ts` for client-side use (in components with `'use client'`) and `lib/supabase/server.ts` for server-side use (in Server Components and Route Handlers).
+    - The server client uses `cookies()` from `next/headers` to correctly read the session on the server.
+    - Updated all relevant files to import the appropriate client, resolving the redirect loop and stabilizing the authentication flow across the application. This is the standard architecture for Supabase in the Next.js App Router.
+
 - 2025-10-14 v0.5.7 — Fix: Resolve authentication redirect loop
   - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
   - Reason: Users were getting stuck in an infinite redirect loop on the login page after authenticating. The screen would flicker as it repeatedly tried to navigate.

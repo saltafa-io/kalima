@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { User, LogOut, Settings } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
@@ -17,6 +17,7 @@ export default function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
+  const supabase = createClient();
 
   // Fetch session and listen for auth changes
   useEffect(() => {

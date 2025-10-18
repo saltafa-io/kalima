@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Suspense, useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import VoiceRecorder from '@/components/audio/VoiceRecorder';
 import { ArrowLeft, ArrowRight, Check, LogOut } from 'lucide-react';
@@ -15,6 +15,7 @@ type ConversationTurn = {
 
 function LearnContent() {
   const router = useRouter();
+  const supabase = createClient();
   const searchParams = useSearchParams();
   const [lessonItems, setLessonItems] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);

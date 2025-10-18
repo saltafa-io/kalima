@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import type { Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 
@@ -16,6 +16,7 @@ import { ArrowLeft } from 'lucide-react';
 export default function AuthPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const supabase = createClient();
   /**
    * This callback function is triggered whenever the user's authentication state changes
    * (e.g., on sign-in or sign-out). It's wrapped in `useCallback` for performance
