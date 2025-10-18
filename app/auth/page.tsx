@@ -23,32 +23,12 @@ export default function AuthPage() {
    */
   const handleAuthStateChange = useCallback(async (_event: string, session: Session | null) => {
     try {
-      // If a session exists, the user has successfully signed in.
       if (session) {
-        // Fetch the user's profile from the 'profiles' table.
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('name, email, level, goals')
-          .eq('id', session.user.id)
-          .single();
-
-        // The 'PGRST116' error code from Supabase indicates that a single row was requested
-        // but not found, which is expected for a new user. We ignore this specific error.
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Profile fetch error:', profileError);
-          setError(`Failed to fetch profile: ${profileError.message}`);
-          return;
-        }
-
-        // If no profile is found, it's a new user. Redirect to the enrollment page.
-        if (!profile) {
-          router.push('/enrollment');
-        } else {
-          // If a profile exists, redirect the existing user to their dashboard.
-          router.push('/dashboard');
-        }
+        // If a session exists, the user has successfully signed in.
+        // Redirect all users directly to the dashboard.
+        router.push('/dashboard');
       } else {
-        // If there is no session (user signed out), clear any existing errors.
+        // If there is no session (e.g., user signed out), clear any existing errors.
         setError(null); // Clear error on sign-out
       }
     } catch (err) {

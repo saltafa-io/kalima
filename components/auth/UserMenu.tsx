@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { User, LogOut, Settings, UserCog } from 'lucide-react';
+import { User, LogOut, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -80,10 +80,6 @@ export default function UserMenu() {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 text-gray-800">
-          <Link href="/enrollment" className="flex items-center px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setIsOpen(false)}>
-            <UserCog className="w-4 h-4 mr-2" />
-            Profile
-          </Link>
           <Link href="/settings" className="flex items-center px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setIsOpen(false)}>
             <Settings className="w-4 h-4 mr-2" />
             Settings
