@@ -85,9 +85,8 @@ export default function AuthPage() {
             },
           }}
           providers={['google']}
-          // After authenticating with Google, the user is redirected back to this same
-          // page (`/auth`) to allow the `onAuthStateChange` listener to handle the session and redirect.
           onlyThirdPartyProviders
+          redirectTo={`${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`}
         />
         {/* A button to allow users to navigate back to the landing page. */}
         <button
