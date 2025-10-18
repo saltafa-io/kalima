@@ -445,13 +445,21 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
-- 2025-10-18 v0.6.7 — Fix: Resolve final authentication redirect loop
-  - Files changed: `app/auth/callback/route.ts`, `lib/supabase/server.ts`, `docs/PROJECT.md`
-  - Reason: Users were stuck in a redirect loop after logging in. The server-side check on the dashboard was failing before the session was fully available, causing a redirect back to the auth page.
+- 2025-10-18 v0.6.9 — Fix: Resolve ESLint build errors
+  - Files changed: `app/middleware.ts`, `lib/supabase/server.ts`, `docs/PROJECT.md`
+  - Reason: The build was failing due to ESLint errors: `prefer-const` in the middleware and `no-unused-vars` in the Supabase server client.
   - Notes:
-    - Updated `app/auth/callback/route.ts` to explicitly handle the code-for-session exchange using the server client and then redirect directly to the dashboard. This is the most robust pattern for the PKCE flow.
-    - Restored the `set` and `remove` methods to `lib/supabase/server.ts` to ensure the server client and middleware can correctly manage session cookies.
-    - This change eliminates the race condition between the client-side navigation and the server-side session check, ensuring a stable login experience.
+    - Changed `let response` to `const response` in `app/middleware.ts`. This is safe because the object is mutated, not reassigned.
+    - Removed the unused `CookieOptions` import from `lib/supabase/server.ts`.
+
+- 2025-10-18 v0.6.8 — Arch: Implement Supabase middleware for session management
+  - Files changed: `app/middleware.ts` (new), `lib/supabase/server.ts`, `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: To fix a server-side exception on the dashboard after login. The session cookie set in the auth callback was not available to the dashboard page component due to Next.js lifecycle differences.
+  - Notes:
+    - Created a new `app/middleware.ts` to handle session refreshing and cookie management on every server-side request. This is the standard, most robust pattern for `@supabase/ssr`.
+    - Simplified `lib/supabase/server.ts` to be a read-only client for use in Server Components, as the middleware now handles all cookie writing.
+    - Simplified the `/auth/callback` route to only handle redirection, as the middleware takes care of the code-for-session exchange automatically.
+    - This change centralizes session management, resolves the server-side exception, and makes the authentication flow more robust and easier to maintain.
 
 - 2025-10-18 v0.6.6 — Fix: Correct Supabase server client cookie handling
   - Files changed: `lib/supabase/server.ts`, `docs/PROJECT.md`
