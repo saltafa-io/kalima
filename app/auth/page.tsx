@@ -16,7 +16,7 @@ import { ArrowLeft } from 'lucide-react';
 export default function AuthPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
   /**
    * This callback function is triggered whenever the user's authentication state changes
    * (e.g., on sign-in or sign-out). It's wrapped in `useCallback` for performance
@@ -45,7 +45,7 @@ export default function AuthPage() {
     // The cleanup function for this effect will unsubscribe from the listener
     // to prevent memory leaks when the component unmounts.
     return () => subscription.unsubscribe();
-  }, [handleAuthStateChange]);
+  }, [handleAuthStateChange, supabase.auth]);
 
   // The component renders the main authentication UI.
   return (

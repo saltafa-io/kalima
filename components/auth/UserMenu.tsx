@@ -17,7 +17,7 @@ export default function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   // Fetch session and listen for auth changes
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function UserMenu() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabase.auth]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

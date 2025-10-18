@@ -15,7 +15,7 @@ type ConversationTurn = {
 
 function LearnContent() {
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
   const searchParams = useSearchParams();
   const [lessonItems, setLessonItems] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +77,7 @@ function LearnContent() {
     checkSession().catch(err => {
       console.error('Failed to check session:', err);
     });
-  }, [router, searchParams]);
+  }, [router, searchParams, supabase.auth]);
 
   const handleRecordingComplete = (blob: Blob) => {
     setLastAudio(blob);

@@ -445,6 +445,46 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-18 v0.6.6 — Fix: Correct Supabase server client cookie handling
+  - Files changed: `lib/supabase/server.ts`, `docs/PROJECT.md`
+  - Reason: A previous change incorrectly removed the `set` and `remove` methods from the server client's cookie object, causing an error because the `createServerClient` function requires them.
+  - Notes:
+    - Restored the `set` and `remove` methods in `lib/supabase/server.ts`.
+    - Although the middleware is the primary writer of cookies, the server client still needs to pass these methods through to the underlying cookie store to satisfy the type requirements of `@supabase/ssr`. This resolves the error and stabilizes the server-side client.
+
+- 2025-10-18 v0.6.5 — Arch: Implement Supabase middleware for session management
+  - Files changed: `app/middleware.ts` (new), `lib/supabase/server.ts`, `app/dashboard/page.tsx`, `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: To fix a persistent authentication issue and align with the recommended Supabase + Next.js App Router architecture.
+  - Notes:
+    - Created a new `app/middleware.ts` to handle session refreshing on every server-side request. This is the standard pattern for `@supabase/ssr`.
+    - Simplified `lib/supabase/server.ts` to be a read-only client, as the middleware now handles all cookie writing.
+    - Simplified the `/auth/callback` route to only handle redirection, as the middleware takes care of the code-for-session exchange.
+    - This change centralizes session management, making the authentication flow more robust and easier to maintain.
+
+- 2025-10-18 v0.6.4 — Arch: Refactor server-side Supabase client creation
+  - Files changed: `lib/supabase/server.ts`, `app/dashboard/page.tsx`, `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: To fix an error where the dynamic `cookies()` function from `next/headers` was being called incorrectly within Route Handlers.
+  - Notes:
+    - The `createClient` function in `lib/supabase/server.ts` was refactored to accept a `cookieStore` argument instead of calling `cookies()` internally.
+    - This makes the client creation more flexible and robust, allowing it to be used in any server-side context (Server Components, Route Handlers, Server Actions).
+    - Updated the dashboard page and the auth callback route to get the cookie store via `cookies()` and pass it to the `createClient` function. This aligns with the recommended pattern for using `@supabase/ssr`.
+
+- 2025-10-18 v0.6.3 — Fix: Resolve incorrect OAuth redirect to root URL
+  - Files changed: `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: After signing in with Google, users were being redirected to `http://localhost:3000/?code=...` instead of the dashboard. This was caused by an inconsistent Supabase client setup.
+  - Notes:
+    - The `app/auth/callback/route.ts` was using the deprecated `@supabase/auth-helpers-nextjs` library, while the rest of the app uses `@supabase/ssr`.
+    - Updated the callback route to use the correct `createClient` from `@/lib/supabase/server`, which is based on `@supabase/ssr`.
+    - This change ensures the authorization code is correctly exchanged for a session, fixing the redirect loop and allowing users to successfully land on their dashboard.
+
+- 2025-10-18 v0.6.2 — Fix: Resolve ESLint warnings for missing useEffect dependencies
+  - Files changed: `app/auth/page.tsx`, `app/learn/page.tsx`, `components/auth/UserMenu.tsx`, `docs/PROJECT.md`
+  - Reason: The build process was showing warnings about missing dependencies (`supabase.auth`) in `useEffect` hooks. This was caused by creating the Supabase client on every render.
+  - Notes:
+    - Updated the components to initialize the Supabase client using `useState(() => createClient())`. This ensures the client is created only once per component lifecycle.
+    - Added `supabase.auth` to the dependency arrays of the respective `useEffect` hooks, which is now safe because the `supabase` object is stable.
+    - This change resolves the linting warnings and improves the stability and performance of the components.
+
 - 2025-10-14 v0.6.1 — Fix: Resolve build failure by installing `@supabase/ssr`
   - Files changed: `app/dashboard/page.tsx`, `docs/PROJECT.md`
   - Reason: The build was failing with a "Module not found" error because the `@supabase/ssr` package, a new dependency for the server-side auth client, was not installed.
