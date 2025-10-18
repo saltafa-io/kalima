@@ -445,6 +445,15 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-18 v0.8.0 — Arch: Implement definitive fix for server-side auth exception
+  - Files changed: `app/auth/callback/route.ts`, `app/middleware.ts`, `docs/PROJECT.md`
+  - Reason: A persistent server-side exception occurred after login because the auth callback route was using a read-only cookie store, which failed when trying to set the session cookie.
+  - Notes:
+    - The root cause was that `lib/supabase/server.ts` uses `cookies()` from `next/headers`, which is read-only in Route Handlers. The `exchangeCodeForSession` method was throwing an error because it could not write the session.
+    - The `/auth/callback` route has been updated to create its own temporary, context-aware Supabase client that can correctly read from the request and write to the response. This ensures the session is created successfully.
+    - The middleware has been restored to its primary role of refreshing sessions on subsequent requests.
+    - This change resolves the server exception by ensuring the initial session creation is handled correctly within the Route Handler's lifecycle.
+
 - 2025-10-18 v0.7.9 — Chore: Fully automate deployment script
   - Files changed: `deploy.bat`, `docs/PROJECT.md`
   - Reason: To create a zero-touch deployment process by removing all manual prompts.
