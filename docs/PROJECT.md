@@ -445,6 +445,13 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-14 v0.5.7 — Fix: Resolve authentication redirect loop
+  - Files changed: `app/auth/page.tsx`, `docs/PROJECT.md`
+  - Reason: Users were getting stuck in an infinite redirect loop on the login page after authenticating. The screen would flicker as it repeatedly tried to navigate.
+  - Notes:
+    - The issue was caused by a race condition between the `onAuthStateChange` listener and the `redirectTo` prop on the Supabase `<Auth>` component, both attempting to handle the post-login redirect.
+    - Removed the `redirectTo` prop from the `<Auth>` component in `app/auth/page.tsx`. This makes the `onAuthStateChange` listener the single source of truth for navigation, which is the recommended pattern and resolves the loop.
+
 - 2025-10-14 v0.5.6 — Fix: Ensure deployment script completes after successful build
   - Files changed: `deploy.bat`, `docs/PROJECT.md`
   - Reason: The `deploy.bat` script was exiting prematurely after the `npm run build` command, preventing the git commands from running.

@@ -46,11 +46,6 @@ export default function AuthPage() {
     return () => subscription.unsubscribe();
   }, [handleAuthStateChange]);
 
-  // Construct the redirect URL dynamically on the client side.
-  // This is the most robust way to ensure the correct origin is used,
-  // avoiding issues with build-time environment variables.
-  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
-
   // The component renders the main authentication UI.
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center relative overflow-hidden">
@@ -90,9 +85,7 @@ export default function AuthPage() {
           }}
           providers={['google']}
           // After authenticating with Google, the user is redirected back to this same
-          // page (`/auth`) to allow the `onAuthStateChange` listener to handle the session.
-          // The redirectTo URL is now determined dynamically on the client.
-          redirectTo={redirectTo}
+          // page (`/auth`) to allow the `onAuthStateChange` listener to handle the session and redirect.
           onlyThirdPartyProviders
         />
         {/* A button to allow users to navigate back to the landing page. */}
