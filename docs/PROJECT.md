@@ -445,6 +445,14 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-18 v0.7.0 — Fix: Resolve Server Component render error on dashboard
+  - Files changed: `lib/supabase/server.ts`, `docs/PROJECT.md`
+  - Reason: A server-side exception was occurring on the dashboard page after login. This was caused by an incomplete implementation of the cookie store in the server-side Supabase client.
+  - Notes:
+    - The `@supabase/ssr` library requires the `cookies` object to have `get`, `set`, and `remove` methods, even in read-only contexts like Server Components.
+    - Restored the `set` and `remove` methods in `lib/supabase/server.ts`. These methods pass through to the Next.js cookie store, which is the correct pattern when using Supabase middleware.
+    - This change resolves the server-side exception and allows the dashboard to render correctly.
+
 - 2025-10-18 v0.6.9 — Fix: Resolve ESLint build errors
   - Files changed: `app/middleware.ts`, `lib/supabase/server.ts`, `docs/PROJECT.md`
   - Reason: The build was failing due to ESLint errors: `prefer-const` in the middleware and `no-unused-vars` in the Supabase server client.
