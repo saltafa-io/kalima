@@ -1,7 +1,7 @@
 // File: app/middleware.ts
 
-import { createSupabaseServerClient } from '@/lib/supabase/utils';
 import { NextResponse, type NextRequest } from 'next/server';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 /**
  * Supabase authentication middleware.
@@ -16,44 +16,37 @@ import { NextResponse, type NextRequest } from 'next/server';
  * @see https://supabase.com/docs/guides/auth/server-side/nextjs
  */
 export async function middleware(request: NextRequest) {
-  // Create a response object to modify headers and cookies
-  const response = NextResponse.next({
+  let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
 
   // Create a Supabase client with the ability to read and write cookies
-  const supabase = createSupabaseServerClient({
-    get(name: string) {
-      return request.cookies.get(name)?.value;
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({ name, value, ...options });
+          response = NextResponse.next({ request: { headers: request.headers } });
+          response.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({ name, value: '', ...options });
+          response = NextResponse.next({ request: { headers: request.headers } });
+          response.cookies.set({ name, value: '', ...options });
+        },
+      },
     },
-    set(name: string, value: string, options) {
-      // The middleware is responsible for setting the cookie on the response
-      request.cookies.set({
-        name,
-        value,
-        ...options,
-      });
-      response.cookies.set({
-        name,
-        value,
-        ...options,
-      });
-    },
-    remove(name: string, options) {
-      // The middleware is responsible for removing the cookie from the response
-      request.cookies.set({ name, value: '', ...options });
-      response.cookies.set({
-        name,
-        value: '',
-        ...options,
-      });
-    },
-  });
+  );
 
   // This will refresh the session if it's expired
-  await supabase.auth.getUser();
+  await supabase.auth.getSession();
 
   return response;
 }

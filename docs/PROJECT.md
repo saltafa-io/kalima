@@ -445,6 +445,16 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-18 v0.7.7 — Arch: Implement definitive middleware-first auth flow
+  - Files changed: `app/middleware.ts`, `app/auth/callback/route.ts`, `lib/supabase/server.ts`, `lib/supabase/utils.ts` (deleted), `docs/PROJECT.md`
+  - Reason: To fix the persistent server-side exception after login by adopting the standard `@supabase/ssr` middleware pattern.
+  - Notes:
+    - The root cause was a race condition where the auth callback redirected before the browser received the session cookies.
+    - The middleware (`app/middleware.ts`) is now the single source of truth for session management. It handles both creating the initial session from the OAuth `code` and refreshing it on subsequent requests.
+    - The auth callback (`app/auth/callback/route.ts`) is now simplified to only perform a redirect, as the middleware handles the session exchange.
+    - The server client (`lib/supabase/server.ts`) is updated to be the canonical client for Server Components.
+    - This architecture eliminates the race condition and provides a robust, maintainable authentication flow.
+
 - 2025-10-18 v0.7.6 — Fix: Resolve build failure from syntax error and unused imports
   - Files changed: `app/middleware.ts`, `lib/supabase/utils.ts`, `docs/PROJECT.md`
   - Reason: The build was failing due to a syntax error in the middleware file and warnings about unused imports in the Supabase utility file.
