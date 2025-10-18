@@ -445,6 +445,22 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-18 v0.7.9 — Chore: Fully automate deployment script
+  - Files changed: `deploy.bat`, `docs/PROJECT.md`
+  - Reason: To create a zero-touch deployment process by removing all manual prompts.
+  - Notes:
+    - The `deploy.bat` script now automatically extracts the commit message description from the latest changelog entry in `docs/PROJECT.md`.
+    - Removed the prompt for the commit message, making the script fully automated.
+
+- 2025-10-18 v0.7.8 — Fix: Resolve server exception by correcting auth callback flow
+  - Files changed: `app/middleware.ts`, `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: A persistent server-side exception occurred after login due to a race condition where the browser was redirected to the dashboard before receiving the session cookies.
+  - Notes:
+    - The root cause was that the middleware was not designed to handle the initial code-for-session exchange, and the callback route was not correctly setting cookies on the redirect response.
+    - The middleware has been simplified to a pass-through, as its primary role in refreshing tokens is handled by the server client.
+    - The `/auth/callback` route now explicitly handles the `exchangeCodeForSession` call. This ensures the session cookies are set on the same response that redirects the user to the dashboard, eliminating the race condition.
+    - This change aligns the project with a more robust and explicit server-side authentication pattern for the Next.js App Router.
+
 - 2025-10-18 v0.7.7 — Arch: Implement definitive middleware-first auth flow
   - Files changed: `app/middleware.ts`, `app/auth/callback/route.ts`, `lib/supabase/server.ts`, `lib/supabase/utils.ts` (deleted), `docs/PROJECT.md`
   - Reason: To fix the persistent server-side exception after login by adopting the standard `@supabase/ssr` middleware pattern.

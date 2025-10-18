@@ -8,31 +8,31 @@ echo.
 
 REM --- Auto-increment version ---
 echo --- Determining new version...
-set "last_version="
-for /f "tokens=3" %%a in ('findstr /R /C:"^- [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] v[0-9]*\.[0-9]*\.[0-9]*" "docs\PROJECT.md"') do (
-    set "last_version=%%a"
-    goto :found_version
+set "last_changelog_line="
+for /f "delims=" %%a in ('findstr /R /C:"^- [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] v[0-9]*\.[0-9]*\.[0-9]*" "docs\PROJECT.md"') do (
+    set "last_changelog_line=%%a"
+    goto :found_line
 )
 
-:found_version
-if not defined last_version (
+:found_line
+if not defined last_changelog_line (
     echo Could not find previous version in docs/PROJECT.md. Using v0.1.0.
     set "version=v0.1.0"
+    set "message=Initial commit"
 ) else (
-    for /f "tokens=1,2,3 delims=.v" %%a in ("%last_version%") do (
-        set /a "patch=%%c + 1"
-        call set "version=v%%a.%%b.%%patch%%"
+    for /f "tokens=3,5*" %%a in ("%last_changelog_line%") do (
+        set "last_version=%%a"
+        set "message=%%b"
+    )
+    for /f "tokens=1,2,3 delims=.v" %%x in ("%last_version%") do (
+        set /a "patch=%%z + 1"
+        call set "version=v%%x.%%y.%%patch%%"
     )
 )
-echo New version: %version%
-echo.
 
-REM Prompt for commit message
-set /p message="Enter commit message description: "
-if not defined message (
-    echo Commit message is required. Aborting.
-    goto :eof
-)
+echo New version: %version%
+echo Commit message: %message%
+echo.
 
 echo.
 echo --- Cleaning old build cache ---
