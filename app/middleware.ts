@@ -1,6 +1,6 @@
 // File: app/middleware.ts
 
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createSupabaseServerClient } from '@/lib/supabase/utils';
 import { NextResponse, type NextRequest } from 'next/server';
 
 /**
@@ -24,28 +24,36 @@ export async function middleware(request: NextRequest) {
   });
 
   // Create a Supabase client with the ability to read and write cookies
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          // The middleware is responsible for setting the cookie on the response
-          response.cookies.set({ name, value, ...options });
-        },
-        remove(name: string, options: CookieOptions) {
-          // The middleware is responsible for removing the cookie from the response
-          response.cookies.set({ name, value: '', ...options });
-        },
-      },
+  const supabase = createSupabaseServerClient({
+    get(name: string) {
+      return request.cookies.get(name)?.value;
     },
-  );
+    set(name: string, value: string, options) {
+      // The middleware is responsible for setting the cookie on the response
+      request.cookies.set({
+        name,
+        value,
+        ...options,
+      });
+      response.cookies.set({
+        name,
+        value,
+        ...options,
+      });
+    },
+    remove(name: string, options) {
+      // The middleware is responsible for removing the cookie from the response
+      request.cookies.set({ name, value: '', ...options });
+      response.cookies.set({
+        name,
+        value: '',
+        ...options,
+      });
+    },
+  });
 
   // This will refresh the session if it's expired
-  await supabase.auth.getSession();
+  await supabase.auth.getUser();
 
   return response;
 }

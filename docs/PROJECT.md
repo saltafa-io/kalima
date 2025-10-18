@@ -445,6 +445,22 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-18 v0.7.6 — Fix: Resolve build failure from syntax error and unused imports
+  - Files changed: `app/middleware.ts`, `lib/supabase/utils.ts`, `docs/PROJECT.md`
+  - Reason: The build was failing due to a syntax error in the middleware file and warnings about unused imports in the Supabase utility file.
+  - Notes:
+    - Removed a duplicated block of code from `app/middleware.ts` that was causing a parsing error.
+    - Removed unused `NextRequest` and `NextResponse` type imports from `lib/supabase/utils.ts` to resolve build warnings.
+
+- 2025-10-18 v0.7.5 — Arch: Unify Supabase server clients to fix auth exception
+  - Files changed: `lib/supabase/utils.ts` (new), `lib/supabase/server.ts`, `app/middleware.ts`, `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: A persistent server-side exception occurred after login because the auth callback route was using a read-only Supabase client, which failed when trying to set the session cookie.
+  - Notes:
+    - Created a new `lib/supabase/utils.ts` to provide a centralized `createSupabaseServerClient` function that is context-aware.
+    - Refactored `app/middleware.ts` and `app/auth/callback/route.ts` to use this new utility, providing the correct cookie-handling logic for their respective contexts (Middleware vs. Route Handler).
+    - Simplified `lib/supabase/server.ts` to be the canonical client for Server Components, which correctly uses the read-only `cookies()` from `next/headers`.
+    - This architectural change resolves the server exception by ensuring that any server-side code attempting to write cookies has the necessary permissions, making the entire authentication flow robust and correct.
+
 - 2025-10-18 v0.7.4 — Fix: Resolve server error due to missing import
   - Files changed: `app/auth/callback/route.ts`, `docs/PROJECT.md`
   - Reason: A previous change to remove a duplicate import incorrectly removed the `NextResponse` import, causing a server-side reference error in the auth callback route.
