@@ -371,6 +371,14 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-18 v0.8.8 — Fix: Resolve auth loop by correcting cookie handling in callback
+  - Files changed: `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: A persistent authentication loop occurred after login because the auth callback route was attempting to write cookies to the immutable `request` object instead of the `response` object, causing a server exception.
+  - Notes:
+    - The root cause was that `request.cookies.set()` is not a valid operation and throws an unhandled error.
+    - The `/auth/callback` route has been updated to create a `NextResponse` object first. The Supabase client's `set` and `remove` cookie handlers now correctly operate on `response.cookies`.
+    - This ensures the session cookie is successfully set on the response before the user is redirected, resolving the server exception and stabilizing the login flow.
+
 - 2025-10-18 v0.8.7 — Docs: Update known issues and risks
   - Files changed: `docs/PROJECT.md`
   - Reason: To ensure the "Known issues and risks" section accurately reflects the current state of the application after recent authentication-related architectural changes.
