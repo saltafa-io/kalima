@@ -5,7 +5,7 @@ import DashboardClient, { DashboardData, RecentLesson } from './DashboardClient'
 
 export const dynamic = 'force-dynamic';
 export default async function DashboardPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Safely get the user from the session
   const { data: authData, error: authError } = await supabase.auth.getUser();

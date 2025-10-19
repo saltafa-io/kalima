@@ -387,14 +387,6 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
-- 2025-10-19 v0.9.16 — Fix: Resolve ESLint build errors
-  - Files changed: `app/middleware.ts`, `lib/supabase/server.ts`, `docs/PROJECT.md`
-  - Reason: The build was failing due to ESLint errors: `prefer-const` in the middleware and `no-unused-vars` in the Supabase server client.
-  - Notes:
-    - Changed `let response` to `const response` in `app/middleware.ts` as the variable is never reassigned.
-    - Prefixed the unused `error` variables in the `catch` blocks of `lib/supabase/server.ts` with an underscore to resolve the `no-unused-vars` warnings.
-    - These changes fix the build and align the code with best practices.
-
 - 2025-10-19 v0.9.15 — DB: Add `completed_at` to user_lesson_progress
   - Files changed: `docs/PROJECT.md` (this file)
   - Reason: To accurately track when a user completes a lesson. This is essential for features like activity streaks and recent activity on the dashboard.
