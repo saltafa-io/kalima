@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface NextLessonInfo {
   lessonId: string;
@@ -13,7 +13,10 @@ export interface NextLessonInfo {
  * @param enrollmentId The user's enrollment ID.
  * @returns A promise that resolves to the next lesson's information, or null if not found or completed.
  */
-export async function getNextLesson(enrollmentId: string): Promise<NextLessonInfo | null> {
+export async function getNextLesson(
+  supabase: SupabaseClient,
+  enrollmentId: string
+): Promise<NextLessonInfo | null> {
   try {
     // First, get the IDs of all completed lessons for this enrollment
     const { data: completedLessons, error: progressError } = await supabase
@@ -22,7 +25,9 @@ export async function getNextLesson(enrollmentId: string): Promise<NextLessonInf
       .eq('enrollment_id', enrollmentId)
       .eq('status', 'completed');
 
-    if (progressError) throw progressError;
+    if (progressError) {
+      throw new Error(progressError.message, { cause: progressError });
+    }
     const completedLessonIds = (completedLessons || []).map(p => p.lesson_id);
 
     // Then, find the first lesson that is NOT in the completed list
@@ -36,7 +41,9 @@ export async function getNextLesson(enrollmentId: string): Promise<NextLessonInf
 
     const { data: nextLessonData, error: nextLessonError } = await query.order('order').limit(1).single();
 
-    if (nextLessonError) throw nextLessonError;
+    if (nextLessonError) {
+      throw new Error(nextLessonError.message, { cause: nextLessonError });
+    }
     if (!nextLessonData) return null;
 
     return { lessonId: nextLessonData.id, title: nextLessonData.title, objective: nextLessonData.objective };

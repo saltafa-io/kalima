@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
+import { useRouter } from 'next/navigation'; 
+import { createClient } from '@/lib/supabase/client';
 import { PlayCircle, PlusCircle, Flame, History } from 'lucide-react';
 
 export interface RecentLesson {
@@ -34,6 +34,7 @@ export default function DashboardClient({
   initialRecentActivity,
 }: DashboardClientProps) {
   const router = useRouter();
+  const [supabase] = useState(() => createClient());
   const [continuingId, setContinuingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getNextLesson } from '../../lib/services/curriculumService';
 import DashboardClient, { DashboardData, RecentLesson } from './DashboardClient';
 
+export const dynamic = 'force-dynamic';
 export default async function DashboardPage() {
   const supabase = createClient();
 
@@ -15,17 +16,20 @@ export default async function DashboardPage() {
   // Fetch all data on the server in parallel
   const [dashboardResult, activityResult, profileResult] = await Promise.all([
     supabase.rpc('get_user_dashboard_data'),
-    supabase.rpc('get_user_activity_stats'),
+    supabase.rpc('get_user_activity_stats', { p_user_id: authData.user.id }),
     supabase.from('profiles').select('name').eq('id', authData.user.id).single(),
   ]);
 
   // Process and enrich data
   const { data: rpcData, error: rpcError } = dashboardResult;
-  if (rpcError) throw rpcError; // Or handle error gracefully
+  if (rpcError) {
+    // Wrap the Supabase error in a standard Error object
+    throw new Error(rpcError.message, { cause: rpcError });
+  }
   const data = rpcData || [];
   const enrichedData: DashboardData[] = await Promise.all(
     data.map(async (item: Omit<DashboardData, 'next_lesson_title'>) => {
-      const nextLesson = await getNextLesson(item.enrollment_id);
+      const nextLesson = await getNextLesson(supabase, item.enrollment_id);
       return {
         ...item,
         next_lesson_title: nextLesson?.title || (item.completed_lessons === item.total_lessons ? 'Completed!' : 'No upcoming lesson'),
@@ -34,7 +38,10 @@ export default async function DashboardPage() {
   );
 
   const { data: activityData, error: activityError } = activityResult;
-  if (activityError) throw activityError;
+  if (activityError) {
+    // Wrap the Supabase error in a standard Error object
+    throw new Error(activityError.message, { cause: activityError });
+  }
 
   const streak = activityData?.[0]?.current_streak || 0;
   const recentActivity: RecentLesson[] = activityData?.[0]?.recent_lessons || [];
