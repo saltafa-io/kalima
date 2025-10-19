@@ -852,3 +852,10 @@ Use this area to record every change to the project with date/version and short 
 - For every code change that alters behavior, add a short note in the changelog and update this doc's Known Issues or Roadmap if the change addresses one of those.
 
 ---
+
+If you'd like, I can now:
+1. Implement the immediate Enrollment improvements (saving state, validation, delete goal) and add changelog entry; or
+2. First refactor `VoiceRecorder` (higher technical risk but important); or
+3. Add server-side validation to `app/api/speech/route.ts`.
+
+Tell me which item to do next and I'll make the code change and add a versioned changelog entry here.
