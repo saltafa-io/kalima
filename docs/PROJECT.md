@@ -445,6 +445,14 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-18 v0.8.1 — Fix: Correct cookie handling in auth callback to resolve server exception
+  - Files changed: `app/auth/callback/route.ts`, `docs/PROJECT.md`
+  - Reason: A persistent server-side exception occurred after login because the auth callback route was attempting to write cookies to the immutable `request` object instead of the `response` object.
+  - Notes:
+    - The root cause was that `request.cookies.set()` is not a valid operation and throws an error.
+    - The `/auth/callback` route has been updated to create a `NextResponse` object first. The Supabase client's `set` and `remove` cookie handlers now correctly operate on `response.cookies`.
+    - This ensures the session cookie is successfully set on the response before the user is redirected, resolving the server exception and stabilizing the login flow.
+
 - 2025-10-18 v0.8.0 — Arch: Implement definitive fix for server-side auth exception
   - Files changed: `app/auth/callback/route.ts`, `app/middleware.ts`, `docs/PROJECT.md`
   - Reason: A persistent server-side exception occurred after login because the auth callback route was using a read-only cookie store, which failed when trying to set the session cookie.
