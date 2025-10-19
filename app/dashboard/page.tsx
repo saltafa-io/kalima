@@ -6,8 +6,9 @@ import DashboardClient, { DashboardData, RecentLesson } from './DashboardClient'
 export default async function DashboardPage() {
   const supabase = createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  // Safely get the user from the session
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData?.user) {
     redirect('/auth');
   }
 
@@ -15,7 +16,7 @@ export default async function DashboardPage() {
   const [dashboardResult, activityResult, profileResult] = await Promise.all([
     supabase.rpc('get_user_dashboard_data'),
     supabase.rpc('get_user_activity_stats'),
-    supabase.from('profiles').select('name').eq('id', user.id).single(),
+    supabase.from('profiles').select('name').eq('id', authData.user.id).single(),
   ]);
 
   // Process and enrich data

@@ -371,6 +371,14 @@ Priority 3 (2+ months)
 
 ## Changelog (versioned entries)
 
+- 2025-10-19 v0.8.9 — Fix: Resolve 500 error on dashboard by safely accessing user
+  - Files changed: `app/dashboard/page.tsx`, `docs/PROJECT.md`
+  - Reason: After login, the dashboard page was crashing with a 500 Internal Server Error. This was caused by an unsafe destructuring of the `user` object from the `supabase.auth.getUser()` response, which can be `null`.
+  - Notes:
+    - The code now safely checks for the existence of the `data` object from `getUser()` before attempting to access the `user` property.
+    - If the user session is missing or invalid for any reason, the user is now correctly redirected to the login page instead of the server crashing.
+    - This resolves the 500 error and makes the dashboard page more resilient.
+
 - 2025-10-18 v0.8.8 — Fix: Resolve auth loop by correcting cookie handling in callback
   - Files changed: `app/auth/callback/route.ts`, `docs/PROJECT.md`
   - Reason: A persistent authentication loop occurred after login because the auth callback route was attempting to write cookies to the immutable `request` object instead of the `response` object, causing a server exception.
