@@ -20,76 +20,7 @@ Users sign in with OAuth (Supabase + Google), enroll by providing a profile (nam
 
 ## Project File Structure
 
-This section provides a detailed breakdown of the key files and directories in the Kalima project.
-
-```txt
-kalima/
-├── app/
-│   ├── (pages)/
-│   │   ├── curricula/
-│   │   │   ├── CurriculaClient.tsx # Client component for browsing/enrolling in curricula.
-│   │   │   └── page.tsx            # Server component to fetch and display curricula.
-│   │   ├── dashboard/
-│   │   │   ├── DashboardClient.tsx # Client component for dashboard UI.
-│   │   │   └── page.tsx            # Server component for fetching dashboard data.
-│   │   ├── auth/callback/route.ts  # Server-side route for OAuth code exchange.
-│   │   ├── auth/page.tsx         # Handles user sign-in and session state.
-│   │   ├── settings/page.tsx     # Page for user profile and settings management.
-│   │   ├── demo/page.tsx           # Interactive demo of the AI agent conversation.
-│   │   ├── enrollment/page.tsx     # Page for new users to create their profile.
-│   │   ├── learn/page.tsx          # The main learning interface for lessons.
-│   │   └── page.tsx                # The application's root landing page.
-│   ├── api/
-│   │   ├── agent/route.ts          # API for AI agent interactions.
-│   │   ├── demo/route.ts           # API for the interactive demo.
-│   │   └── speech/route.ts         # API for speech processing (transcription/analysis).
-│   └── layout.tsx                  # Root layout for the Next.js application.
-├── components/
-│   ├── auth/                     # Authentication-related components.
-│   │   └── UserMenu.tsx          # Client component for user dropdown menu.
-│   ├── audio/VoiceRecorder.tsx     # Component for recording user audio.
-│   ├── enrollment/Enrollment.tsx   # The enrollment form component.
-│   ├── feedback/
-│   │   └── PronunciationFeedback.tsx # Displays pronunciation feedback to the user.
-│   └── landing-page.tsx            # The main component for the marketing landing page.
-├── lib/
-│   ├── ai/                         # AI-related logic and integrations (e.g., OpenAI).
-│   ├── analysis/                   # Utility functions for analysis (e.g., scoring).
-│   ├── services/                   # Database services (e.g., curriculumService).
-│   └── supabase.ts                 # Supabase client initialization.
-├── docs/
-│   └── PROJECT.md                  # This project documentation file.
-├── tsconfig.json                   # TypeScript configuration with path aliases.
-└── package.json                    # Project dependencies and scripts.
-```
-## Repository layout (important files)
-
-- `app/` — Next.js app routes and pages
-  - `app/page.tsx` — root landing page (renders `components/landing-page.tsx`)
-  - `app/layout.tsx` — root layout, now includes the `UserMenu` component for authenticated users.
-  - `app/auth/page.tsx` — Supabase Auth UI page and auth state handler
-  - `app/enrollment/page.tsx` — enrollment route (protects route and passes userId to component)
-  - `app/demo/page.tsx` — interactive demo with mock AI agent conversation
-  - `app/dashboard/page.tsx` — displays user's enrolled curricula and progress
-  - `app/curricula/page.tsx` — allows users to browse and enroll in curricula
-  - `app/learn/page.tsx` — protected learning interface with voice recording
-  - `app/api/speech/route.ts` — serverless API route for speech processing with modes
-  - `app/api/demo/route.ts` — demo API with deterministic responses
-  - `app/api/agent/route.ts` — main API for interacting with the AI agent
-- `components/` — Reusable UI components
-  - `components/auth/UserMenu.tsx` — A new client component that provides a dropdown menu for logged-in users to navigate to settings or log out.
-  - `components/landing-page.tsx` — landing page with updated messaging
-  - `components/audio/VoiceRecorder.tsx` — robust speech recorder with refs
-  - `components/enrollment/Enrollment.tsx` — enrollment form and logic
-- `lib/supabase.ts` — Supabase client initialization
-- `package.json` — dependencies and scripts
-- `.github/workflows/ci.yml` — GitHub Actions CI workflow
-
-### New Directories
-- `lib/ai/` — Contains the core AI agent logic and OpenAI integrations.
-- `lib/analysis/` — Contains utility functions for analysis, like pronunciation scoring.
-- `lib/services/` — Contains services for interacting with the database, like `curriculumService.ts`.
-Note: this list covers files relevant to auth, enrollment and speech processing (the current working area).
+For a detailed breakdown of the project's file and repository layout, please see `docs/Structure.md`.
 
 ## Data model (inferred)
 
@@ -110,34 +41,30 @@ Adjust the actual Postgres types in Supabase if needed. The app reads/writes the
 
 ## Authentication & OAuth redirect notes
 
-- The app uses Supabase Auth with Google as a provider via `@supabase/auth-ui-react`.
-- The `Auth` component in `app/auth/page.tsx` sets `redirectTo` to `${window.location.origin}/auth` (local dev), but in production you must register the exact Vercel URL as an authorized redirect in both Supabase and the Google OAuth client.
+- The app uses the `@supabase/ssr` library, which is designed for server-side rendering frameworks like Next.js and implements the secure PKCE (Proof Key for Code Exchange) OAuth flow.
+- The `Auth` component in `app/auth/page.tsx` has its `redirectTo` prop set to point to `/auth/callback`.
 - Current deployed site: https://kalima-five.vercel.app
-- You indicated you've updated Supabase redirect URL to `https://kalima-five.vercel.app/enrollment`. That is valid — make sure the same URL is added as an Authorized Redirect URI in the Google Cloud Console for the OAuth Client ID.
-
-Why this matters
-- OAuth redirect URIs must match exactly. If a provider redirects to the wrong path (for example `/`), the token fragment may be lost from the page that expects it, and the client will not finish the sign-in flow.
+- **Crucially**, the "Redirect URLs" in your Supabase project's authentication settings must include:
+  - `http://localhost:3000/auth/callback` (for local development)
+  - `https://kalima-five.vercel.app/auth/callback` (for production)
+- Any other URLs (like the root `/`) should be removed from this list to prevent the provider from choosing the wrong redirect path.
 
 ## Key client/server flows
 
 1. Sign-in flow
-   - User visits `/auth` and uses Supabase Auth UI to sign in with Google.
-   - After provider consent, Supabase/Google redirect back to a configured redirect URI with a session token (often returned in the URL fragment for implicit flow) or a code for PKCE flow.
-   - Client calls `supabase.auth.getSession()` and subscribes to `supabase.auth.onAuthStateChange` to detect the session and redirect the user accordingly.
+   - A user clicks "Sign in with Google" on the `/auth` page.
+   - After Google consent, the user is redirected to `/auth/callback` with an authorization `code`.
+   - The Route Handler at `app/auth/callback/route.ts` executes on the server. It creates a context-aware Supabase client and calls `exchangeCodeForSession(code)`. This securely exchanges the code for a user session and sets the session cookies on the response.
+   - The callback handler then redirects the user to `/dashboard`.
+   - The `app/middleware.ts` runs on every subsequent request. It uses the session cookie to keep the user's session fresh, ensuring that Server Components like the dashboard can reliably access the user's authentication state.
 
-2. Enrollment flow
-   - Protected route `/enrollment` uses client-side `supabase.auth.getSession()` to ensure a session exists.
-   - If no session, app redirects to `/auth`.
-   - If session exists, the `Enrollment` component fetches the `profiles` row for the current user and populates the form.
-   - User edits fields (name/email/level/goals) and submits. The client updates the `profiles` row and then routes to `/learn` with encoded lessons.
-
-3. Speech processing (prototype)
+2. Speech processing (prototype)
    - `VoiceRecorder` uses Web Speech API (SpeechRecognition) for live transcription and MediaRecorder to capture audio Blobs.
    - The API `app/api/speech/route.ts` currently simulates transcription (returns mocked transcribed text and pronunciation scoring). This is a placeholder for integration with an external Speech-to-Text service (OpenAI Whisper or similar).
 
 Note: the long-term vision is to use speech transcription and generative models to run interactive voice agents (conversational tutors) that can produce dialogues, role-play scenarios, and adaptive exercises tailored to the user's level and goals.
 
-4. Demo Flow
+3. Demo Flow
    - The demo route `/demo` provides an interactive experience with a mock AI agent
    - Uses the VoiceRecorder for voice input and maintains a conversation history
    - Makes API calls to `/api/demo/route.ts` which provides deterministic responses based on keywords
@@ -145,21 +72,20 @@ Note: the long-term vision is to use speech transcription and generative models 
 
 ## Known issues and risks (current)
 
-1. OAuth redirect mismatch — If provider redirects to root (/) with token fragment rather than the `redirectTo` path the app uses (e.g., `/enrollment`), the client may not detect the session. Fix: configure exact redirect URIs in Supabase and Google.
+1. **OAuth Redirect Configuration**: The authentication flow relies on the "Redirect URLs" in the Supabase dashboard being correctly set to `.../auth/callback`. If other URLs (like the root `/`) are present and more permissive, the provider might choose the wrong one, breaking the login flow and causing a server-side exception.
 
 2. VoiceRecorder considerations (low risk, after refactor)
    - Monitor memory usage with long recordings (audioChunks in refs)
    - Consider adding a maximum recording duration limit
    - Add visual feedback for recording errors
-   - Consider streaming audio for longer recordings
 
-3. `app/api/speech/route.ts` (server) — validation and performance
-   - Input validation for `formData` entries is weak. The code trusts casts like `formData.get('audio') as File` and `formData.get('expectedText') as string` without checks.
+3. `app/api/speech/route.ts` (server) — performance and testing
+   - While basic validation for file type and size has been added, the API could be further hardened against unexpected payloads.
    - The mock transcription uses randomness; for testing a deterministic mode would be better.
    - When integrating a real STT provider, be careful with file size limits and streaming vs in-memory buffering.
 
 4. Supabase env vars
-   - `lib/supabase.ts` uses non-null assertions on NEXT_PUBLIC env vars. If missing in Vercel, the app may fail; ensure env vars are configured correctly in all environments (dev, preview, prod).
+   - The Supabase clients in `lib/supabase/client.ts` and `lib/supabase/server.ts` use non-null assertions (`!`) on environment variables. If these are missing in any environment (local, Vercel preview, or production), the application will fail at runtime.
 
 ## Immediate recommended improvements (high value, low risk)
 
@@ -444,6 +370,45 @@ Priority 3 (2+ months)
 - Add lessons management and personalized curriculum generation.
 
 ## Changelog (versioned entries)
+
+- 2025-10-18 v0.8.7 — Docs: Update known issues and risks
+  - Files changed: `docs/PROJECT.md`
+  - Reason: To ensure the "Known issues and risks" section accurately reflects the current state of the application after recent authentication-related architectural changes.
+  - Notes:
+    - Updated the descriptions for OAuth redirect configuration, API validation, and Supabase environment variable risks.
+
+- 2025-10-18 v0.8.6 — Docs: Update authentication flow documentation
+  - Files changed: `docs/PROJECT.md`
+  - Reason: To accurately reflect the current `@supabase/ssr` PKCE authentication flow.
+  - Notes:
+    - Updated the "Authentication & OAuth redirect notes" and "Key client/server flows" sections to describe the roles of the middleware, the auth callback route, and the required redirect URL configuration.
+
+- 2025-10-18 v0.8.5 — Docs: Complete refactor of project structure to separate file
+  - Files changed: `docs/PROJECT.md`
+  - Reason: To finalize the documentation refactoring by removing the structure sections from the main project README.
+  - Notes:
+    - The "Project File Structure" and "Repository layout" sections have been removed from `PROJECT.md` and now live exclusively in `docs/Structure.md`.
+
+- 2025-10-18 v0.8.4 — Docs: Update project structure documentation
+  - Files changed: `docs/Structure.md`, `docs/PROJECT.md`
+  - Reason: To ensure the project structure documentation is up-to-date with the latest architectural changes.
+  - Notes:
+    - Updated `Structure.md` to reflect the addition of `app/middleware.ts` and the refactoring of the Supabase client into `lib/supabase/client.ts` and `lib/supabase/server.ts`.
+
+- 2025-10-18 v0.8.3 — Docs: Refactor project structure into a separate file
+  - Files changed: `docs/PROJECT.md`, `docs/Structure.md` (new)
+  - Reason: To improve the organization and readability of the project documentation.
+  - Notes:
+    - Moved the "Project File Structure" and "Repository layout" sections from `PROJECT.md` to a new `Structure.md` file.
+
+- 2025-10-18 v0.8.2 — Fix: Resolve server exception by correcting auth callback flow
+  - Files changed: `app/auth/callback/route.ts`, `app/middleware.ts`, `docs/PROJECT.md`
+  - Reason: A persistent server-side exception occurred after login because the auth callback route was attempting to write cookies to the immutable `request` object instead of the `response` object.
+  - Notes:
+    - The root cause was that `request.cookies.set()` is not a valid operation and throws an error.
+    - The `/auth/callback` route has been updated to create its own temporary, context-aware Supabase client that can correctly read from the request and write to the response. This ensures the session is created successfully.
+    - The middleware has been simplified to a pass-through, as its primary role in refreshing tokens is handled by the server client.
+    - This change resolves the server exception by ensuring the initial session creation is handled correctly within the Route Handler's lifecycle.
 
 - 2025-10-18 v0.8.1 — Fix: Correct cookie handling in auth callback to resolve server exception
   - Files changed: `app/auth/callback/route.ts`, `docs/PROJECT.md`
@@ -887,10 +852,3 @@ Use this area to record every change to the project with date/version and short 
 - For every code change that alters behavior, add a short note in the changelog and update this doc's Known Issues or Roadmap if the change addresses one of those.
 
 ---
-
-If you'd like, I can now:
-1. Implement the immediate Enrollment improvements (saving state, validation, delete goal) and add changelog entry; or
-2. First refactor `VoiceRecorder` (higher technical risk but important); or
-3. Add server-side validation to `app/api/speech/route.ts`.
-
-Tell me which item to do next and I'll make the code change and add a versioned changelog entry here.

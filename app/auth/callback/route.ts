@@ -9,12 +9,8 @@ import { NextResponse, type NextRequest } from 'next/server';
  * and then redirecting the user to their destination (the dashboard).
  */
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
+  const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/dashboard';
-
-  // Create a response object to handle the redirect
-  const response = NextResponse.redirect(new URL(next, request.url));
 
   if (code) {
     // Create a Supabase client that can read and write cookies in a Route Handler
@@ -28,11 +24,11 @@ export async function GET(request: NextRequest) {
           },
           set(name: string, value: string, options: CookieOptions) {
             // The Route Handler is responsible for setting the cookie on the response
-            response.cookies.set({ name, value, ...options });
+            request.cookies.set({ name, value, ...options });
           },
           remove(name: string, options: CookieOptions) {
             // The Route Handler is responsible for removing the cookie from the response
-            response.cookies.set({ name, value: '', ...options });
+            request.cookies.set({ name, value: '', ...options });
           },
         },
       }
@@ -41,5 +37,5 @@ export async function GET(request: NextRequest) {
   }
 
   // URL to redirect to after sign in process completes
-  return response;
+  return NextResponse.redirect(`${origin}/dashboard`);
 }
